@@ -6,12 +6,11 @@ use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\MarketController;
 use App\Http\Controllers\Admin\PackagingOptionController;
 use App\Http\Controllers\Admin\PriorityController;
-use App\Http\Controllers\Admin\WheelSegmentController;
 use Illuminate\Support\Facades\Route;
 
 // The content admin for ALLPACK 2026: manages everything the proposal calls out as needing
-// to change without a rebuild (business cases, markets, priorities, packaging option scores,
-// wheel wedges) plus a leads report. Gated by login only — see routes/auth.php for why
+// to change without a rebuild (business cases, markets, priorities, packaging option scores)
+// plus a leads report. Gated by login only — see routes/auth.php for why
 // self-registration is disabled.
 Route::middleware('auth')->prefix('admin')->group(function () {
     // Named plainly "dashboard" (not "admin.dashboard") because Breeze's own auth controllers
@@ -33,10 +32,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('packaging-options', PackagingOptionController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['packaging-options' => 'packagingOption']);
-
-    Route::get('wheel-segments', [WheelSegmentController::class, 'index'])->name('wheel-segments.index');
-    Route::match(['put', 'patch'], 'wheel-segments/{wheelSegment}', [WheelSegmentController::class, 'update'])
-        ->name('wheel-segments.update');
 
     Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');

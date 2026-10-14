@@ -1,13 +1,11 @@
 import { Head } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Users, Target, Disc3, Trophy, Handshake, ListChecks } from 'lucide-react';
+import { Users, Target, Handshake, ListChecks } from 'lucide-react';
 
 interface Stats {
     visitors: number;
     decision_sessions_completed: number;
     decision_sessions_started: number;
-    wheel_spins: number;
-    wheel_wins: number;
     handoffs_requested: number;
 }
 
@@ -16,8 +14,6 @@ export default function Dashboard({ stats }: { stats: Stats }) {
         { label: 'Total Visitors', value: stats.visitors, icon: Users },
         { label: 'Decision Lab Completed', value: stats.decision_sessions_completed, icon: Target },
         { label: 'Decision Lab Started', value: stats.decision_sessions_started, icon: ListChecks },
-        { label: 'Wheel Spins', value: stats.wheel_spins, icon: Disc3 },
-        { label: 'Wheel Wins', value: stats.wheel_wins, icon: Trophy },
         { label: 'Handoffs Requested', value: stats.handoffs_requested, icon: Handshake },
     ];
 

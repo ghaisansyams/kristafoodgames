@@ -4,8 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\MiniGameAttempt;
 use App\Models\Visitor;
-use App\Models\WheelSegment;
-use App\Models\WheelSpin;
 use Illuminate\Database\Seeder;
 
 /**
@@ -18,10 +16,6 @@ class LeaderboardDemoSeeder extends Seeder
     public function run(): void
     {
         $this->stopwatch('Budi Santoso', 9.99);
-        $this->movesGame('memory_card', 'Siti Aminah', 8);
-        $this->movesGame('puzzle', 'Andi Wijaya', 12);
-        $this->spotMissing('Rina Kusuma', 1, 6);
-        $this->wheelWin('Joko Prasetyo');
     }
 
     private function stopwatch(string $name, float $stoppedAt): void
@@ -33,45 +27,6 @@ class LeaderboardDemoSeeder extends Seeder
             'game' => 'stopwatch',
             'won' => true,
             'meta' => ['stopped_at' => $stoppedAt],
-        ]);
-    }
-
-    private function movesGame(string $game, string $name, int $moves): void
-    {
-        $visitor = Visitor::firstOrCreate(['name' => $name]);
-
-        MiniGameAttempt::create([
-            'visitor_id' => $visitor->id,
-            'game' => $game,
-            'won' => true,
-            'meta' => ['moves' => $moves, 'seconds' => 30],
-        ]);
-    }
-
-    private function spotMissing(string $name, int $attempts, int $seconds): void
-    {
-        $visitor = Visitor::firstOrCreate(['name' => $name]);
-
-        MiniGameAttempt::create([
-            'visitor_id' => $visitor->id,
-            'game' => 'spot_missing',
-            'won' => true,
-            'meta' => ['attempts' => $attempts, 'seconds' => $seconds],
-        ]);
-    }
-
-    private function wheelWin(string $name): void
-    {
-        $visitor = Visitor::firstOrCreate(['name' => $name]);
-        $winSegment = WheelSegment::where('outcome', 'win')->first();
-
-        if (! $winSegment) {
-            return;
-        }
-
-        WheelSpin::create([
-            'visitor_id' => $visitor->id,
-            'wheel_segment_id' => $winSegment->id,
         ]);
     }
 }

@@ -34,9 +34,4 @@ class Visitor extends Model
     {
         return $this->hasMany(DecisionSession::class);
     }
-
-    public function wheelSpins(): HasMany
-    {
-        return $this->hasMany(WheelSpin::class);
-    }
 }

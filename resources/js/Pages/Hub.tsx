@@ -3,17 +3,13 @@ import { Head } from '@inertiajs/react';
 import QrCodeImage from '@/Components/Kiosk/QrCodeImage';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
-import { WheelLogo, DecisionLogo, MemoryLogo, PuzzleLogo, StopwatchLogo, SpotMissingLogo } from '@/Components/Kiosk/GameLogos';
+import { DecisionLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { useBoothSession } from '@/lib/useBoothSession';
 import { useIdleReset } from '@/lib/useIdleReset';
-import WheelExperience from '@/Features/Wheel/WheelExperience';
 import DecisionLabExperience from '@/Features/DecisionLab/DecisionLabExperience';
-import MemoryCardExperience from '@/Features/MemoryCard/MemoryCardExperience';
-import PuzzleExperience from '@/Features/Puzzle/PuzzleExperience';
 import StopwatchExperience from '@/Features/Stopwatch/StopwatchExperience';
-import SpotMissingExperience from '@/Features/SpotMissing/SpotMissingExperience';
 
-type Screen = 'idle' | 'choose' | 'wheel' | 'decision_lab' | 'memory' | 'puzzle' | 'stopwatch' | 'spot_missing';
+type Screen = 'idle' | 'choose' | 'decision_lab' | 'stopwatch';
 
 // Visitors scan this to fill their details on their own phone, then get bounced back here
 // automatically — needs two requests (booth creates the session, phone claims it) to land on
@@ -26,12 +22,8 @@ const QR_JOIN_ENABLED = import.meta.env.VITE_QR_JOIN_ENABLED !== 'false';
 type LogoComponent = (props: { className?: string }) => JSX.Element;
 
 const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
-    { screen: 'wheel', title: 'Spin the Wheel', tagline: 'SPIN. PLAY. PACK. WIN!', Logo: WheelLogo },
     { screen: 'decision_lab', title: 'Decision Lab', tagline: 'Can you pick the right pack?', Logo: DecisionLogo },
-    { screen: 'memory', title: 'Memory Match', tagline: 'Find the matching pairs', Logo: MemoryLogo },
-    { screen: 'puzzle', title: 'Packaging Puzzle', tagline: 'Slide it back together', Logo: PuzzleLogo },
     { screen: 'stopwatch', title: 'Stop at 10.00', tagline: 'Precision wins the prize', Logo: StopwatchLogo },
-    { screen: 'spot_missing', title: "What's Missing?", tagline: 'Spot the vanished product', Logo: SpotMissingLogo },
 ];
 
 export default function Hub() {
@@ -68,7 +60,7 @@ export default function Hub() {
                     <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
                         ALLPACK 2026 · Interactive Experience Hub
                     </p>
-                    <WheelLogo className="h-32 w-32" />
+                    <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-white drop-shadow-[0_0_30px_rgba(245,158,11,0.4)]">
                         GROWING OUR
                         <br />
@@ -108,7 +100,7 @@ export default function Hub() {
                     <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
                         ALLPACK 2026 · Interactive Experience Hub
                     </p>
-                    <WheelLogo className="h-32 w-32" />
+                    <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-white drop-shadow-[0_0_30px_rgba(245,158,11,0.4)]">
                         GROWING OUR
                         <br />
@@ -143,14 +135,8 @@ export default function Hub() {
 
             {screen !== 'idle' && screen !== 'choose' && (
                 <>
-                    {screen === 'wheel' && (
-                        <WheelExperience visitorId={visitorId} onBack={goToChoose} onGoToDecisionLab={() => setScreen('decision_lab')} />
-                    )}
                     {screen === 'decision_lab' && <DecisionLabExperience visitorId={visitorId} onBack={goToChoose} />}
-                    {screen === 'memory' && <MemoryCardExperience visitorId={visitorId} onBack={goToChoose} />}
-                    {screen === 'puzzle' && <PuzzleExperience visitorId={visitorId} onBack={goToChoose} />}
                     {screen === 'stopwatch' && <StopwatchExperience visitorId={visitorId} onBack={goToChoose} />}
-                    {screen === 'spot_missing' && <SpotMissingExperience visitorId={visitorId} onBack={goToChoose} />}
                 </>
             )}
         </CosmicBackground>

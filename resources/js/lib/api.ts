@@ -1,17 +1,9 @@
-import type {
-    DecisionLabContent,
-    DecisionResult,
-    DecisionSession,
-    WheelContent,
-    WheelSpinResult,
-    PackagingOptionChoice,
-} from '@/types/content';
+import type { DecisionLabContent, DecisionResult, DecisionSession, PackagingOptionChoice } from '@/types/content';
 
 const api = () => window.axios;
 
 export const ContentApi = {
     decisionLab: () => api().get<DecisionLabContent>('/api/content/decision-lab').then((r) => r.data),
-    wheel: () => api().get<WheelContent>('/api/content/wheel').then((r) => r.data),
 };
 
 export const BoothSessionApi = {
@@ -58,12 +50,7 @@ export const DecisionSessionApi = {
 };
 
 export const MiniGameApi = {
-    record: (
-        game: 'memory_card' | 'puzzle' | 'stopwatch' | 'spot_missing',
-        won: boolean,
-        visitorId?: number | null,
-        meta?: Record<string, unknown>,
-    ) =>
+    record: (game: 'stopwatch', won: boolean, visitorId?: number | null, meta?: Record<string, unknown>) =>
         api().post('/api/mini-game-attempts', { game, won, visitor_id: visitorId, meta }),
 };
 
@@ -81,14 +68,4 @@ export interface LeaderboardGame {
 export const LeaderboardApi = {
     recent: () => api().get<{ entries: LeaderboardEntry[] }>('/api/leaderboard').then((r) => r.data.entries),
     full: () => api().get<{ games: LeaderboardGame[] }>('/api/leaderboard/full').then((r) => r.data.games),
-};
-
-export const WheelApi = {
-    spin: (visitorId?: number | null) =>
-        api()
-            .post<{ spin: WheelSpinResult }>('/api/wheel/spins', { visitor_id: visitorId })
-            .then((r) => r.data.spin),
-
-    handoff: (spinId: number, visitorId?: number | null) =>
-        api().post(`/api/wheel/spins/${spinId}/handoff`, { visitor_id: visitorId }),
 };

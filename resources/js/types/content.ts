@@ -78,23 +78,3 @@ export interface DecisionResult {
     solution_label: string;
 }
 
-export type WheelOutcome = 'win' | 'bomb';
-
-export interface WheelSegmentSummary {
-    id: number;
-    sort_order: number;
-    outcome: WheelOutcome;
-    reward_label: string | null;
-}
-
-export interface WheelContent {
-    segments: WheelSegmentSummary[];
-}
-
-export interface WheelSpinResult {
-    id: number;
-    sort_order: number;
-    outcome: WheelOutcome;
-    reward_label: string | null;
-    message: string;
-}

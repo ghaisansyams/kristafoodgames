@@ -6,7 +6,6 @@ import {
     MapPin,
     ListOrdered,
     Package,
-    CircleDot,
     Users,
     LogOut,
 } from 'lucide-react';
@@ -17,7 +16,6 @@ const NAV = [
     { href: 'admin.markets.index', label: 'Markets', icon: MapPin },
     { href: 'admin.priorities.index', label: 'Priorities', icon: ListOrdered },
     { href: 'admin.packaging-options.index', label: 'Packaging Options', icon: Package },
-    { href: 'admin.wheel-segments.index', label: 'Wheel Wedges', icon: CircleDot },
     { href: 'admin.leads.index', label: 'Leads', icon: Users },
 ];
 

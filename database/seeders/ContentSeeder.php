@@ -6,11 +6,10 @@ use App\Models\BusinessCase;
 use App\Models\Market;
 use App\Models\PackagingOption;
 use App\Models\Priority;
-use App\Models\WheelSegment;
 use Illuminate\Database\Seeder;
 
 /**
- * Placeholder content for the Packaging Decision Lab and Digital Wheel of Fortune.
+ * Placeholder content for the Packaging Decision Lab.
  *
  * Every packaging option's 1-5 factor scores are illustrative game-model values so the
  * experience is demoable end-to-end. Per the proposal (slide 10C, "Perlu validasi"), these
@@ -131,23 +130,6 @@ class ContentSeeder extends Seeder
                     [...$optionData, 'business_case_id' => $businessCase->id, 'sort_order' => $index + 1]
                 );
             }
-        }
-
-        // Eight equal physical wedges, all rendered as an identical mystery box on the
-        // frontend: exactly one is the prize, the other seven are "bombs" (a miss). Nothing
-        // in the content here is ever shown before the spin resolves.
-        $wheelSegments = [
-            ['outcome' => 'win', 'reward_label' => 'ALLPACK Prize', 'message' => "Congratulations! You've won a prize — show this screen to our booth crew to claim it.", 'sort_order' => 1],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'Boom! Not a winner this time. Spin again or explore our packaging solutions.', 'sort_order' => 2],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'So close! Try another spin, or talk to our team about your packaging needs.', 'sort_order' => 3],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'No luck this round. Give it another spin!', 'sort_order' => 4],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'Missed it! One more spin could be the one.', 'sort_order' => 5],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'Not this time — but our packaging experts are ready to chat.', 'sort_order' => 6],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'Almost! Spin again for another shot at the prize.', 'sort_order' => 7],
-            ['outcome' => 'bomb', 'reward_label' => null, 'message' => 'No prize this time. Try once more!', 'sort_order' => 8],
-        ];
-        foreach ($wheelSegments as $segment) {
-            WheelSegment::updateOrCreate(['sort_order' => $segment['sort_order']], $segment);
         }
     }
 }

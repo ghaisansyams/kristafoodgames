@@ -3,7 +3,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { AlertTriangle } from 'lucide-react';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import TouchButton from '@/Components/Kiosk/TouchButton';
-import { WheelLogo } from '@/Components/Kiosk/GameLogos';
+import { StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 
 export default function Join({ token, alreadyClaimed }: { token: string; alreadyClaimed: boolean }) {
     const form = useForm({
@@ -39,7 +39,7 @@ export default function Join({ token, alreadyClaimed }: { token: string; already
             <Head title="ALLPACK 2026 — Join" />
 
             <div className="flex min-h-screen flex-col items-center justify-center px-6 py-10">
-                <WheelLogo className="mb-4 h-20 w-20" />
+                <StopwatchLogo className="mb-4 h-20 w-20" />
                 <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">ALLPACK 2026</p>
                 <h1 className="mb-2 text-center font-display text-3xl font-black uppercase text-white">Let's Get Started!</h1>
                 <p className="mb-8 max-w-xs text-center text-sm text-slate-300">

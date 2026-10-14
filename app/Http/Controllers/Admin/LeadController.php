@@ -15,7 +15,6 @@ class LeadController extends Controller
             ->with([
                 'decisionSessions' => fn ($q) => $q->whereNotNull('completed_at')->latest(),
                 'decisionSessions.businessCase:id,title',
-                'wheelSpins.wheelSegment:id,outcome',
             ])
             ->latest()
             ->get()
@@ -34,7 +33,6 @@ class LeadController extends Controller
                     'fit_score' => $s->fit_score,
                     'profile' => $s->profile,
                 ]),
-                'wheel_outcomes' => $visitor->wheelSpins->map(fn ($s) => $s->wheelSegment?->outcome),
             ]);
 
         return Inertia::render('Admin/Leads/Index', [

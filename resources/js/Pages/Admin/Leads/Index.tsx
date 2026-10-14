@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Download, Mail, Handshake, Gift, Bomb } from 'lucide-react';
+import { Download, Mail, Handshake } from 'lucide-react';
 
 interface DecisionResult {
     business_case: string | null;
@@ -19,7 +19,6 @@ interface LeadRow {
     handoff_requested_at: string | null;
     created_at: string;
     decision_results: DecisionResult[];
-    wheel_outcomes: ('win' | 'bomb' | null)[];
 }
 
 export default function Index({ leads }: { leads: LeadRow[] }) {
@@ -47,7 +46,6 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                             <th className="px-5 py-3">Contact</th>
                             <th className="px-5 py-3">Industry</th>
                             <th className="px-5 py-3">Decision Lab</th>
-                            <th className="px-5 py-3">Wheel</th>
                             <th className="px-5 py-3">Follow-up</th>
                             <th className="px-5 py-3">Captured</th>
                         </tr>
@@ -70,17 +68,6 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                                     ))}
                                 </td>
                                 <td className="px-5 py-3">
-                                    <div className="flex gap-1">
-                                        {lead.wheel_outcomes.map((o, i) =>
-                                            o === 'win' ? (
-                                                <Gift key={i} className="h-4 w-4 text-amber-500" />
-                                            ) : o === 'bomb' ? (
-                                                <Bomb key={i} className="h-4 w-4 text-slate-400" />
-                                            ) : null,
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-5 py-3">
                                     <div className="flex gap-2">
                                         {lead.email_sent_at && (
                                             <span title="Result emailed">
@@ -99,7 +86,7 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                         ))}
                         {leads.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
+                                <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
                                     No leads captured yet.
                                 </td>
                             </tr>

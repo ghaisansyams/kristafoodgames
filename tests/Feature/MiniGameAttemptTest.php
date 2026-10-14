@@ -16,14 +16,14 @@ class MiniGameAttemptTest extends TestCase
 
         $this->postJson('/api/mini-game-attempts', [
             'visitor_id' => $visitor->id,
-            'game' => 'memory_card',
+            'game' => 'stopwatch',
             'won' => true,
-            'meta' => ['moves' => 9, 'seconds' => 34],
+            'meta' => ['stopped_at' => 10.02],
         ])->assertCreated();
 
         $this->assertDatabaseHas('mini_game_attempts', [
             'visitor_id' => $visitor->id,
-            'game' => 'memory_card',
+            'game' => 'stopwatch',
             'won' => true,
         ]);
     }
