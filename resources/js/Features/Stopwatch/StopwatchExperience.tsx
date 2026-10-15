@@ -8,15 +8,24 @@ import { useLocale } from '@/lib/i18n';
 const TARGET_SECONDS = 10;
 const WIN_TOLERANCE = 0.15;
 
-type Phase = 'idle' | 'running' | 'result';
+// Below this hold duration, a press/tap just toggles pause/resume; at or above it, the
+// press commits whatever time is showing as the final result. Without this, a player could
+// tap Space once a second, read the frozen number, and creep toward exactly 10.00 one pause
+// at a time — the long-press-to-lock-in forces a single deliberate "stop here" decision.
+const LONG_PRESS_MS = 600;
+
+type Phase = 'idle' | 'running' | 'paused' | 'result';
 
 export default function StopwatchExperience({ visitorId, onBack }: { visitorId: number | null; onBack: () => void }) {
     const { t } = useLocale();
     const [phase, setPhase] = useState<Phase>('idle');
     const [elapsed, setElapsed] = useState(0);
+    const [pausedElapsed, setPausedElapsed] = useState(0);
     const [finalElapsed, setFinalElapsed] = useState<number | null>(null);
     const startRef = useRef(0);
     const frameRef = useRef<number>();
+    const keyPressStartRef = useRef<number | null>(null);
+    const pointerPressStartRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (phase !== 'running') return;
@@ -32,41 +41,102 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
         };
     }, [phase]);
 
-    function start() {
+    function currentElapsedNow(): number {
+        return phase === 'running' ? (performance.now() - startRef.current) / 1000 : pausedElapsed;
+    }
+
+    function startFresh() {
         startRef.current = performance.now();
         setElapsed(0);
         setPhase('running');
     }
 
-    function stop() {
-        const final = (performance.now() - startRef.current) / 1000;
-        setFinalElapsed(final);
+    function pauseAt(value: number) {
+        setPausedElapsed(value);
+        setElapsed(value);
+        setPhase('paused');
+    }
+
+    function resumeFrom(value: number) {
+        startRef.current = performance.now() - value * 1000;
+        setPhase('running');
+    }
+
+    function finalize(value: number) {
+        setFinalElapsed(value);
         setPhase('result');
 
-        const won = Math.abs(final - TARGET_SECONDS) <= WIN_TOLERANCE;
-        MiniGameApi.record('stopwatch', won, visitorId, { stopped_at: Number(final.toFixed(3)) });
+        const won = Math.abs(value - TARGET_SECONDS) <= WIN_TOLERANCE;
+        MiniGameApi.record('stopwatch', won, visitorId, { stopped_at: Number(value.toFixed(3)) });
     }
 
     function playAgain() {
         setFinalElapsed(null);
         setElapsed(0);
+        setPausedElapsed(0);
         setPhase('idle');
     }
 
-    // Space doubles as Start/Stop — handy on a keyboard-equipped setup (or for testing),
-    // on top of tapping the on-screen button. Re-subscribes on every phase change so the
-    // listener always checks the current phase rather than a stale one.
+    // A short tap toggles pause/resume (continuing from the same elapsed time, never resetting
+    // to 0); a long press commits the time currently showing as the final, scored result. Only
+    // wired up to the running/paused button — Start and Play Again are plain taps.
+    function handlePressStart() {
+        pointerPressStartRef.current = performance.now();
+    }
+
+    function handlePressEnd() {
+        if (pointerPressStartRef.current === null) return;
+        const heldMs = performance.now() - pointerPressStartRef.current;
+        pointerPressStartRef.current = null;
+        resolvePress(heldMs);
+    }
+
+    function resolvePress(heldMs: number) {
+        if (phase === 'running') {
+            if (heldMs >= LONG_PRESS_MS) {
+                finalize(currentElapsedNow());
+            } else {
+                pauseAt(currentElapsedNow());
+            }
+        } else if (phase === 'paused') {
+            if (heldMs >= LONG_PRESS_MS) {
+                finalize(pausedElapsed);
+            } else {
+                resumeFrom(pausedElapsed);
+            }
+        } else if (phase === 'result' && heldMs >= LONG_PRESS_MS) {
+            playAgain();
+        }
+    }
+
+    // Space mirrors the on-screen button's tap-vs-hold behavior — handy on a keyboard-equipped
+    // setup (or for testing), on top of touching the button. Re-subscribes on every phase
+    // change so the listener always checks the current phase rather than a stale one.
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
-            if (e.code !== 'Space') return;
+            if (e.code !== 'Space' || e.repeat) return;
             e.preventDefault();
-            if (phase === 'idle') start();
-            else if (phase === 'running') stop();
+            if (phase === 'idle') {
+                startFresh();
+                return;
+            }
+            keyPressStartRef.current = performance.now();
+        }
+        function handleKeyUp(e: KeyboardEvent) {
+            if (e.code !== 'Space' || keyPressStartRef.current === null) return;
+            e.preventDefault();
+            const heldMs = performance.now() - keyPressStartRef.current;
+            keyPressStartRef.current = null;
+            resolvePress(heldMs);
         }
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [phase]);
+    }, [phase, pausedElapsed]);
 
     const won = finalElapsed !== null && Math.abs(finalElapsed - TARGET_SECONDS) <= WIN_TOLERANCE;
     const diff = finalElapsed !== null ? Math.abs(finalElapsed - TARGET_SECONDS) : null;
@@ -93,6 +163,12 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                 <span className="ml-1 text-2xl text-slate-500">s</span>
             </div>
 
+            {(phase === 'running' || phase === 'paused') && (
+                <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-indigo-500">
+                    {t('tapPauseHoldStop')}
+                </p>
+            )}
+
             {phase === 'result' && (
                 <p className="mb-6 text-center text-slate-600">
                     {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} —{' '}
@@ -100,10 +176,17 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                 </p>
             )}
 
-            {phase === 'idle' && <TouchButton onClick={start}>{t('start')}</TouchButton>}
-            {phase === 'running' && (
-                <TouchButton variant="secondary" onClick={stop}>
-                    {t('stop')}
+            {phase === 'idle' && <TouchButton onClick={startFresh}>{t('start')}</TouchButton>}
+            {(phase === 'running' || phase === 'paused') && (
+                <TouchButton
+                    variant="secondary"
+                    onPointerDown={handlePressStart}
+                    onPointerUp={handlePressEnd}
+                    onPointerLeave={() => {
+                        pointerPressStartRef.current = null;
+                    }}
+                >
+                    {phase === 'running' ? t('pause') : t('resume')}
                 </TouchButton>
             )}
             {phase === 'result' && (
