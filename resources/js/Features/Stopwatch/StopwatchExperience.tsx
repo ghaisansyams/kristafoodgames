@@ -8,11 +8,13 @@ import { useLocale } from '@/lib/i18n';
 const TARGET_SECONDS = 10;
 const WIN_TOLERANCE = 0.15;
 
-// Below this hold duration, a press/tap just toggles pause/resume; at or above it, the
-// press commits whatever time is showing as the final result. Without this, a player could
-// tap Space once a second, read the frozen number, and creep toward exactly 10.00 one pause
-// at a time — the long-press-to-lock-in forces a single deliberate "stop here" decision.
-const LONG_PRESS_MS = 600;
+// Holding the button/Space for this long auto-commits whatever time is showing as the final
+// result — it fires on its own, mid-hold, with no release needed (the booth's physical button
+// will work the same way: hold it down, and at the 2-second mark it locks in on its own).
+// Releasing before this mark is just a short tap, which toggles pause/resume instead. Without
+// this, a player could tap Space once a second, read the frozen number, and creep toward
+// exactly 10.00 one pause at a time.
+const LOCK_IN_HOLD_MS = 2000;
 
 type Phase = 'idle' | 'running' | 'paused' | 'result';
 
@@ -24,8 +26,8 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
     const [finalElapsed, setFinalElapsed] = useState<number | null>(null);
     const startRef = useRef(0);
     const frameRef = useRef<number>();
-    const keyPressStartRef = useRef<number | null>(null);
-    const pointerPressStartRef = useRef<number | null>(null);
+    const keyHoldTimeoutRef = useRef<number | null>(null);
+    const pointerHoldTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (phase !== 'running') return;
@@ -77,41 +79,49 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
         setPhase('idle');
     }
 
-    // A short tap toggles pause/resume (continuing from the same elapsed time, never resetting
-    // to 0); a long press commits the time currently showing as the final, scored result. Only
-    // wired up to the running/paused button — Start and Play Again are plain taps.
-    function handlePressStart() {
-        pointerPressStartRef.current = performance.now();
-    }
-
-    function handlePressEnd() {
-        if (pointerPressStartRef.current === null) return;
-        const heldMs = performance.now() - pointerPressStartRef.current;
-        pointerPressStartRef.current = null;
-        resolvePress(heldMs);
-    }
-
-    function resolvePress(heldMs: number) {
-        if (phase === 'running') {
-            if (heldMs >= LONG_PRESS_MS) {
+    // Arms a 2-second auto-commit timer for the press that just started, snapshotting the
+    // phase/paused value as of press time — nothing else changes `phase` mid-hold, so this
+    // snapshot stays valid for the life of the timer.
+    function armLockIn(timeoutRef: React.MutableRefObject<number | null>) {
+        const phaseAtPress = phase;
+        const pausedAtPress = pausedElapsed;
+        timeoutRef.current = window.setTimeout(() => {
+            timeoutRef.current = null;
+            if (phaseAtPress === 'running') {
                 finalize(currentElapsedNow());
-            } else {
-                pauseAt(currentElapsedNow());
+            } else if (phaseAtPress === 'paused') {
+                finalize(pausedAtPress);
+            } else if (phaseAtPress === 'result') {
+                playAgain();
             }
+        }, LOCK_IN_HOLD_MS);
+    }
+
+    // Released before the lock-in timer fired — that's a short tap: toggle pause/resume.
+    function disarmAndShortTap(timeoutRef: React.MutableRefObject<number | null>) {
+        if (timeoutRef.current === null) return; // already auto-committed, nothing left to do
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+        if (phase === 'running') {
+            pauseAt(currentElapsedNow());
         } else if (phase === 'paused') {
-            if (heldMs >= LONG_PRESS_MS) {
-                finalize(pausedElapsed);
-            } else {
-                resumeFrom(pausedElapsed);
-            }
-        } else if (phase === 'result' && heldMs >= LONG_PRESS_MS) {
-            playAgain();
+            resumeFrom(pausedElapsed);
         }
     }
 
+    function handlePressStart() {
+        if (pointerHoldTimeoutRef.current !== null) return;
+        armLockIn(pointerHoldTimeoutRef);
+    }
+
+    function handlePressEnd() {
+        disarmAndShortTap(pointerHoldTimeoutRef);
+    }
+
     // Space mirrors the on-screen button's tap-vs-hold behavior — handy on a keyboard-equipped
-    // setup (or for testing), on top of touching the button. Re-subscribes on every phase
-    // change so the listener always checks the current phase rather than a stale one.
+    // setup (or for testing the booth's forthcoming physical button), on top of touching the
+    // button. Re-subscribes on every phase change so the listener always checks current state
+    // rather than a stale one.
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (e.code !== 'Space' || e.repeat) return;
@@ -120,20 +130,23 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                 startFresh();
                 return;
             }
-            keyPressStartRef.current = performance.now();
+            if (keyHoldTimeoutRef.current !== null) return;
+            armLockIn(keyHoldTimeoutRef);
         }
         function handleKeyUp(e: KeyboardEvent) {
-            if (e.code !== 'Space' || keyPressStartRef.current === null) return;
+            if (e.code !== 'Space') return;
             e.preventDefault();
-            const heldMs = performance.now() - keyPressStartRef.current;
-            keyPressStartRef.current = null;
-            resolvePress(heldMs);
+            disarmAndShortTap(keyHoldTimeoutRef);
         }
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
+            if (keyHoldTimeoutRef.current !== null) {
+                window.clearTimeout(keyHoldTimeoutRef.current);
+                keyHoldTimeoutRef.current = null;
+            }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase, pausedElapsed]);
@@ -183,7 +196,10 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                     onPointerDown={handlePressStart}
                     onPointerUp={handlePressEnd}
                     onPointerLeave={() => {
-                        pointerPressStartRef.current = null;
+                        if (pointerHoldTimeoutRef.current !== null) {
+                            window.clearTimeout(pointerHoldTimeoutRef.current);
+                            pointerHoldTimeoutRef.current = null;
+                        }
                     }}
                 >
                     {phase === 'running' ? t('pause') : t('resume')}

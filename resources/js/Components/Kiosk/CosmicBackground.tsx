@@ -1,12 +1,12 @@
 import { PropsWithChildren } from 'react';
 import { GameLogoStyles } from '@/Components/Kiosk/GameLogos';
-import HologramRibbon from '@/Components/Kiosk/HologramRibbon';
 
 /**
  * The shared "Liquid Glass" backdrop for every screen — a warm, light surface with soft
- * blurred color blobs behind frosted panels, so every card reads as glass floating over light
- * rather than a flat page. Keeps the component name (CosmicBackground) even though the look is
- * no longer dark/cosmic, since every screen still imports it by that name.
+ * blurred color blobs and a faint grid for depth behind frosted panels, so every card reads
+ * as glass floating over light rather than a flat page. Keeps the component name
+ * (CosmicBackground) even though the look is no longer dark/cosmic, since every screen still
+ * imports it by that name.
  */
 export default function CosmicBackground({ className = '', children }: PropsWithChildren<{ className?: string }>) {
     return (
@@ -14,6 +14,11 @@ export default function CosmicBackground({ className = '', children }: PropsWith
             {/* Injected once here (not per-screen) so every game's animated logo keeps its
                 keyframes even though only one screen is mounted inside this wrapper at a time. */}
             <GameLogoStyles />
+
+            {/* A barely-there grid for structure — the glass panels need something under them
+                to read as "floating," not just a flat gradient. Kept faint enough that it never
+                competes with the panels or text sitting on top of it. */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:linear-gradient(rgba(79,70,229,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(79,70,229,0.5)_1px,transparent_1px)] [background-size:56px_56px]" />
 
             {/* Fixed pixel sizes (not vw/vmin) so these render identically across devices —
                 viewport-relative units looked wildly different between a laptop window, an
@@ -23,15 +28,18 @@ export default function CosmicBackground({ className = '', children }: PropsWith
             <div className="pointer-events-none absolute -right-1/4 top-1/3 h-[440px] w-[440px] rounded-full bg-teal-300/35 blur-[120px]" />
             <div className="pointer-events-none absolute bottom-[-20%] left-1/3 h-[400px] w-[400px] rounded-full bg-pink-300/30 blur-[120px]" />
 
-            {/* The iridescent glass-ribbon accent — purely decorative, kept to one corner and
-                a soft opacity so it reads as a holographic sheen behind the panels rather than
-                competing with them for attention. */}
-            <HologramRibbon className="absolute -right-10 top-28 h-[360px] w-[200px] opacity-55 sm:h-[500px] sm:w-[280px]" />
+            {/* A soft, slowly-breathing glow behind whatever sits at the top of each screen
+                (the hero icon, a game's logo) — gives the page a single clear focal point
+                instead of three equally-weighted blobs. */}
+            <div
+                className="pointer-events-none absolute left-1/2 top-24 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-white/60 blur-[90px]"
+                style={{ animation: 'glow-breathe 6s ease-in-out infinite' }}
+            />
 
             <style>{`
-                @keyframes hologram-drift {
-                    0%, 100% { transform: rotate(-3deg) translateY(0px); }
-                    50% { transform: rotate(3deg) translateY(10px); }
+                @keyframes glow-breathe {
+                    0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+                    50% { opacity: 0.85; transform: translateX(-50%) scale(1.12); }
                 }
             `}</style>
 
