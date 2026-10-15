@@ -26,28 +26,28 @@ export function DecisionLogo({ className = 'h-10 w-10' }: { className?: string }
 export function StopwatchLogo({ className = 'h-10 w-10' }: { className?: string }) {
     return (
         <svg viewBox="0 0 48 48" className={className}>
-            <rect x="19" y="2" width="10" height="5" rx="1.5" fill="#fde68a" />
-            <circle cx="24" cy="26" r="18" fill="none" stroke="#f59e0b" strokeWidth="3" />
-            <circle cx="24" cy="26" r="18" fill="#1a0a12" opacity="0.4" />
+            <rect x="19" y="2" width="10" height="5" rx="1.5" fill="#a5b4fc" />
+            <circle cx="24" cy="26" r="18" fill="none" stroke="#6366f1" strokeWidth="3" />
+            <circle cx="24" cy="26" r="18" fill="#1e1b4b" opacity="0.4" />
             {Array.from({ length: 12 }, (_, i) => {
                 const a = (i * 30 * Math.PI) / 180;
                 const x1 = 24 + 15 * Math.sin(a);
                 const y1 = 26 - 15 * Math.cos(a);
                 const x2 = 24 + 17 * Math.sin(a);
                 const y2 = 26 - 17 * Math.cos(a);
-                return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fde68a" strokeWidth="1" opacity="0.6" />;
+                return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#c7d2fe" strokeWidth="1" opacity="0.6" />;
             })}
             <line
                 x1="24"
                 y1="26"
                 x2="24"
                 y2="12"
-                stroke="#dc2626"
+                stroke="#ec4899"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 style={{ transformOrigin: '24px 26px', animation: 'logo-spin 2s linear infinite' }}
             />
-            <circle cx="24" cy="26" r="2.5" fill="#fde68a" />
+            <circle cx="24" cy="26" r="2.5" fill="#c7d2fe" />
         </svg>
     );
 }

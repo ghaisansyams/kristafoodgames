@@ -7,8 +7,8 @@ const STORAGE_KEY = 'allpack.locale';
 const dict = {
     id: {
         heroEyebrow: 'ALLPACK 2026 · Hub Pengalaman Interaktif',
-        heroLine1: 'MENUMBUHKAN',
-        heroLine2: 'MASA DEPAN',
+        heroLine1: 'BERMAIN DAN',
+        heroLine2: 'DAPATKAN HADIAH',
         scanToPlay: 'Pindai untuk Bermain',
         scanInstructions: 'Arahkan kamera ponsel Anda ke kode QR, isi data Anda, lalu lihat kembali ke layar ini.',
         skipAndPlay: 'Sudah jadi pelanggan? Lewati dan mainkan',
@@ -92,8 +92,8 @@ const dict = {
     },
     en: {
         heroEyebrow: 'ALLPACK 2026 · Interactive Experience Hub',
-        heroLine1: 'GROWING OUR',
-        heroLine2: 'TOMORROW',
+        heroLine1: 'PLAY AND',
+        heroLine2: 'WIN PRIZES',
         scanToPlay: 'Scan to Play',
         scanInstructions: 'Point your phone camera at the QR code, fill in your details, then look back here.',
         skipAndPlay: 'Already a customer? Skip and play',
@@ -177,8 +177,8 @@ const dict = {
     },
     zh: {
         heroEyebrow: 'ALLPACK 2026 · 互动体验中心',
-        heroLine1: '共创',
-        heroLine2: '美好明天',
+        heroLine1: '畅玩游戏',
+        heroLine2: '赢取好礼',
         scanToPlay: '扫码开始游戏',
         scanInstructions: '用手机摄像头扫描二维码，填写您的信息，然后返回查看此屏幕。',
         skipAndPlay: '已经是客户？跳过并开始游戏',
