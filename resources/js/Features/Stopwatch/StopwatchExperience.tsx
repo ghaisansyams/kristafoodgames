@@ -79,6 +79,16 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
         setPhase('idle');
     }
 
+    // Space's fast path on the result screen: reset and start the next attempt in one press,
+    // rather than resetting to idle and waiting for a second press. The on-screen "Play Again"
+    // button stays a single reset-to-idle step — this shortcut is specifically for the
+    // keyboard/physical-button path.
+    function playAgainAndStart() {
+        setFinalElapsed(null);
+        setPausedElapsed(0);
+        startFresh();
+    }
+
     // Arms a 1-second auto-commit timer for the press that just started, snapshotting the
     // phase/paused value as of press time — nothing else changes `phase` mid-hold, so this
     // snapshot stays valid for the life of the timer.
@@ -91,8 +101,6 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                 finalize(currentElapsedNow());
             } else if (phaseAtPress === 'paused') {
                 finalize(pausedAtPress);
-            } else if (phaseAtPress === 'result') {
-                playAgain();
             }
         }, LOCK_IN_HOLD_MS);
     }
@@ -128,6 +136,10 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
             e.preventDefault();
             if (phase === 'idle') {
                 startFresh();
+                return;
+            }
+            if (phase === 'result') {
+                playAgainAndStart();
                 return;
             }
             if (keyHoldTimeoutRef.current !== null) return;
@@ -210,6 +222,7 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                     <TouchButton variant={won ? 'secondary' : 'ghost'} onClick={playAgain}>
                         {t('playAgain')}
                     </TouchButton>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">{t('pressSpaceToPlayAgain')}</p>
                     <button onClick={onBack} className="text-sm font-semibold text-slate-500 underline hover:text-slate-900">
                         {t('back')}
                     </button>

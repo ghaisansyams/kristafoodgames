@@ -36,6 +36,7 @@ const dict = {
         tooLate: 'Sedikit terlalu lambat',
         offTarget: 'meleset dari target.',
         playAgain: 'Main Lagi',
+        pressSpaceToPlayAgain: 'atau tekan Spasi untuk langsung main lagi',
 
         loadingExperience: 'Memuat pengalaman…',
         decisionStartTitle: 'Tantangan Kemasan Seperti Apa yang Bisa Anda Selesaikan?',
@@ -125,6 +126,7 @@ const dict = {
         tooLate: 'A little too late',
         offTarget: 'off target.',
         playAgain: 'Play Again',
+        pressSpaceToPlayAgain: 'or press Space to jump straight back in',
 
         loadingExperience: 'Loading experience…',
         decisionStartTitle: 'What Kind of Packaging Challenge Can You Solve?',
@@ -213,6 +215,7 @@ const dict = {
         tooLate: '有点太晚',
         offTarget: '偏离目标。',
         playAgain: '再玩一次',
+        pressSpaceToPlayAgain: '或按空格键直接再玩一次',
 
         loadingExperience: '正在加载体验…',
         decisionStartTitle: '你能解决什么样的包装挑战？',
