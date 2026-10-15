@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocale } from '@/lib/i18n';
 
 /**
  * Persistent countdown from `totalSeconds`, turning red once `dangerSeconds` remain.
@@ -14,6 +15,7 @@ export default function CountdownBar({
     dangerSeconds?: number;
     onExpire?: () => void;
 }) {
+    const { t } = useLocale();
     const [remaining, setRemaining] = useState(totalSeconds);
 
     useEffect(() => {
@@ -39,17 +41,17 @@ export default function CountdownBar({
     return (
         <div className="mx-auto mb-6 w-full max-w-3xl">
             <div className="mb-1 flex items-center justify-between text-xs font-semibold">
-                <span className="uppercase tracking-widest text-slate-400">Time Remaining</span>
-                <span className={`font-display tabular-nums ${danger ? 'animate-pulse text-red-400' : 'text-amber-300'}`}>
+                <span className="uppercase tracking-widest text-slate-500">{t('timeRemaining')}</span>
+                <span className={`font-display tabular-nums ${danger ? 'animate-pulse text-red-500' : 'text-indigo-600'}`}>
                     {minutes}:{seconds.toString().padStart(2, '0')}
                 </span>
             </div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/60">
                 <div
                     className={`h-full rounded-full transition-all duration-1000 ease-linear ${
                         danger
-                            ? 'bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_10px_rgba(239,68,68,0.8)]'
-                            : 'bg-gradient-to-r from-amber-400 to-amber-600 shadow-[0_0_10px_rgba(245,158,11,0.6)]'
+                            ? 'bg-gradient-to-r from-red-400 to-rose-600 shadow-[0_0_10px_rgba(239,68,68,0.6)]'
+                            : 'bg-gradient-to-r from-indigo-400 to-violet-600 shadow-[0_0_10px_rgba(99,102,241,0.5)]'
                     }`}
                     style={{ width: `${percent}%` }}
                 />

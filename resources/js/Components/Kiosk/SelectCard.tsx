@@ -15,15 +15,15 @@ export default function SelectCard({
     return (
         <button
             onClick={onClick}
-            className={`flex min-h-[140px] flex-col items-start gap-2 rounded-2xl border p-6 text-left backdrop-blur-xl transition active:scale-95 ${
+            className={`flex min-h-[140px] flex-col items-start gap-2 rounded-3xl border p-6 text-left backdrop-blur-xl transition active:scale-95 ${
                 selected
-                    ? 'border-amber-400 bg-amber-400/15 shadow-[0_0_24px_rgba(245,158,11,0.45)]'
-                    : 'border-white/15 bg-white/[0.06] hover:border-amber-300/50 hover:bg-white/[0.1]'
+                    ? 'border-indigo-300 bg-indigo-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_0_24px_rgba(99,102,241,0.3)]'
+                    : 'border-white/70 bg-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] hover:border-indigo-200 hover:bg-white/70'
             }`}
         >
             {children}
-            <span className="font-display text-lg font-bold text-white">{title}</span>
-            {description && <span className="text-sm text-slate-300">{description}</span>}
+            <span className="font-display text-lg font-bold text-slate-900">{title}</span>
+            {description && <span className="text-sm text-slate-600">{description}</span>}
         </button>
     );
 }

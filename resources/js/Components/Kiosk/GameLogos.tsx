@@ -8,13 +8,13 @@ export function DecisionLogo({ className = 'h-10 w-10' }: { className?: string }
         <svg viewBox="0 0 48 48" className={className}>
             <g style={{ transformOrigin: '24px 30px', animation: 'logo-tilt 2.4s ease-in-out infinite' }}>
                 <rect x="10" y="20" width="28" height="18" rx="2" fill="#f59e0b" stroke="#78350f" strokeWidth="1.5" />
-                <path d="M10 20 L24 12 L38 20" fill="none" stroke="#fde68a" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M10 20 L24 12 L38 20" fill="none" stroke="#92650a" strokeWidth="2" strokeLinejoin="round" />
                 <path d="M24 12 V26" stroke="#78350f" strokeWidth="1.5" />
             </g>
             <path
                 d="M16 8 q8 -6 16 0"
                 fill="none"
-                stroke="#fde68a"
+                stroke="#92650a"
                 strokeWidth="2"
                 strokeLinecap="round"
                 style={{ animation: 'logo-fade 2.4s ease-in-out infinite' }}

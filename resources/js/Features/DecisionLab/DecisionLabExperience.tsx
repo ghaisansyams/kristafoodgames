@@ -7,6 +7,7 @@ import CountdownBar from '@/Components/Kiosk/CountdownBar';
 import { DecisionLogo } from '@/Components/Kiosk/GameLogos';
 import Icon from '@/lib/icons';
 import { ContentApi, DecisionSessionApi } from '@/lib/api';
+import { useLocale } from '@/lib/i18n';
 import { clearPersistedState, loadPersistedState, savePersistedState } from '@/lib/sessionPersistence';
 import ResultStage from './ResultStage';
 import type {
@@ -44,6 +45,7 @@ export default function DecisionLabExperience({
     visitorId: number | null;
     onBack: () => void;
 }) {
+    const { t } = useLocale();
     const [stage, setStage] = useState<Stage>('loading');
     const [content, setContent] = useState<DecisionLabContent | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -80,7 +82,7 @@ export default function DecisionLabExperience({
                 }
                 restoredRef.current = true;
             })
-            .catch(() => setError('Unable to load content. Please check the connection.'));
+            .catch(() => setError(t('unableToLoadContent')));
     }, []);
 
     useEffect(() => {
@@ -145,7 +147,7 @@ export default function DecisionLabExperience({
             setOptions(fetchedOptions);
             setStage('decision');
         } catch {
-            setError('Unable to load packaging options. Please try again.');
+            setError(t('unableToLoadOptions'));
         } finally {
             setSubmitting(false);
         }
@@ -159,7 +161,7 @@ export default function DecisionLabExperience({
             setResult(decisionResult);
             setStage('result');
         } catch {
-            setError('Unable to compute your result. Please try again.');
+            setError(t('unableToComputeResult'));
         } finally {
             setSubmitting(false);
         }
@@ -170,7 +172,7 @@ export default function DecisionLabExperience({
         return (
             <div className="flex min-h-screen flex-col items-center justify-center gap-4">
                 <DecisionLogo className="h-24 w-24" />
-                <p className="text-xl text-slate-300">{error ?? 'Loading experience…'}</p>
+                <p className="text-xl text-slate-600">{error ?? t('loadingExperience')}</p>
             </div>
         );
     }
@@ -180,32 +182,34 @@ export default function DecisionLabExperience({
             {stage !== 'result' && (
                 <button
                     onClick={onBack}
-                    className="mb-4 flex w-fit items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white"
+                    className="mb-4 flex w-fit items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900"
                 >
-                    <ArrowLeft className="h-4 w-4" /> Back
+                    <ArrowLeft className="h-4 w-4" /> {t('back')}
                 </button>
             )}
 
             {error && (
-                <p className="mb-4 rounded-xl border border-red-500/30 bg-red-950/50 px-4 py-3 text-center text-red-300">{error}</p>
+                <p className="mb-4 rounded-xl border border-red-300/50 bg-red-50/80 px-4 py-3 text-center text-red-600 backdrop-blur-xl">
+                    {error}
+                </p>
             )}
 
             {stage !== 'result' && <CountdownBar totalSeconds={180} dangerSeconds={25} />}
 
             {stage === 'start' && (
-                <div className="mx-auto max-w-2xl rounded-3xl border border-amber-400/20 bg-white/[0.06] p-10 text-center shadow-2xl backdrop-blur-xl">
+                <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/50 p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
                     <DecisionLogo className="mx-auto mb-4 h-28 w-28" />
-                    <h2 className="font-display text-3xl font-black uppercase text-white">What Kind of Packaging Challenge Can You Solve?</h2>
-                    <p className="mt-3 text-slate-300">You have approximately 2–3 minutes to make your decision.</p>
+                    <h2 className="font-display text-3xl font-black uppercase text-slate-900">{t('decisionStartTitle')}</h2>
+                    <p className="mt-3 text-slate-600">{t('decisionStartSubtitle')}</p>
                     <TouchButton className="mt-8" onClick={() => setStage('business_case')}>
-                        ▶ Start Challenge
+                        {t('startChallenge')}
                     </TouchButton>
                 </div>
             )}
 
             {stage === 'business_case' && (
                 <div>
-                    <StepHeader step={1} total={5} title="Choose Your Business Case" />
+                    <StepHeader step={1} total={5} title={t('stepBusinessCase')} />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {content.business_cases.map((bc) => (
                             <SelectCard
@@ -215,7 +219,7 @@ export default function DecisionLabExperience({
                                 selected={businessCase?.id === bc.id}
                                 onClick={() => handleBusinessCaseSelect(bc)}
                             >
-                                <Icon name={bc.icon} className="h-9 w-9 text-amber-400" />
+                                <Icon name={bc.icon} className="h-9 w-9 text-indigo-500" />
                             </SelectCard>
                         ))}
                     </div>
@@ -224,7 +228,7 @@ export default function DecisionLabExperience({
 
             {stage === 'market' && (
                 <div>
-                    <StepHeader step={2} total={5} title="Define Your Market" />
+                    <StepHeader step={2} total={5} title={t('stepMarket')} />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {content.markets.map((m) => (
                             <SelectCard
@@ -241,12 +245,7 @@ export default function DecisionLabExperience({
 
             {stage === 'priorities' && (
                 <div>
-                    <StepHeader
-                        step={3}
-                        total={5}
-                        title="Set Your Top 3 Priorities"
-                        subtitle="Tap in order of importance — do not rank all six."
-                    />
+                    <StepHeader step={3} total={5} title={t('stepPriorities')} subtitle={t('stepPrioritiesSubtitle')} />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {content.priorities.map((p: Priority) => {
                             const rank = priorities.indexOf(p.slug);
@@ -259,9 +258,9 @@ export default function DecisionLabExperience({
                                     onClick={() => togglePriority(p.slug)}
                                 >
                                     <div className="flex w-full items-center justify-between">
-                                        <Icon name={p.icon} className="h-9 w-9 text-amber-400" />
+                                        <Icon name={p.icon} className="h-9 w-9 text-indigo-500" />
                                         {rank !== -1 && (
-                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-b from-amber-300 to-amber-600 text-sm font-bold text-amber-950 shadow-[0_0_10px_rgba(245,158,11,0.6)]">
+                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 text-sm font-bold text-white shadow-[0_0_10px_rgba(99,102,241,0.6)]">
                                                 {rank + 1}
                                             </span>
                                         )}
@@ -272,7 +271,7 @@ export default function DecisionLabExperience({
                     </div>
                     <div className="mt-8 flex justify-end">
                         <TouchButton disabled={priorities.length !== 3 || submitting} onClick={handlePrioritiesConfirm}>
-                            {submitting ? 'Loading options…' : 'Continue'}
+                            {submitting ? t('loadingOptions') : t('continueLabel')}
                         </TouchButton>
                     </div>
                 </div>
@@ -280,12 +279,12 @@ export default function DecisionLabExperience({
 
             {stage === 'decision' && options && (
                 <div>
-                    <StepHeader step={4} total={5} title="Make Your Packaging Decision" />
+                    <StepHeader step={4} total={5} title={t('stepDecision')} />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         {options.map((option, i) => (
                             <div
                                 key={option.id}
-                                className="flex flex-col gap-4 rounded-2xl border border-amber-400/20 bg-white/[0.06] p-5 shadow-2xl backdrop-blur-xl"
+                                className="flex flex-col gap-4 rounded-2xl border border-white/70 bg-white/50 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl"
                             >
                                 <div className="rounded-xl bg-white/90 p-3">
                                     <img
@@ -295,11 +294,11 @@ export default function DecisionLabExperience({
                                     />
                                 </div>
                                 <div>
-                                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-amber-300 to-amber-600 font-bold text-amber-950 shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 font-bold text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]">
                                         {String.fromCharCode(65 + i)}
                                     </span>
-                                    <p className="mt-2 font-display font-bold text-white">{option.label}</p>
-                                    <p className="text-sm text-slate-300">{option.description}</p>
+                                    <p className="mt-2 font-display font-bold text-slate-900">{option.label}</p>
+                                    <p className="text-sm text-slate-600">{option.description}</p>
                                 </div>
                                 <TouchButton
                                     variant="secondary"
@@ -307,7 +306,7 @@ export default function DecisionLabExperience({
                                     disabled={submitting}
                                     onClick={() => handleDecide(option.id)}
                                 >
-                                    Choose This
+                                    {t('chooseThis')}
                                 </TouchButton>
                             </div>
                         ))}
