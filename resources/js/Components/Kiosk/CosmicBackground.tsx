@@ -1,10 +1,6 @@
-import { lazy, PropsWithChildren, Suspense } from 'react';
+import { PropsWithChildren } from 'react';
 import { GameLogoStyles } from '@/Components/Kiosk/GameLogos';
-
-// three.js + React Three Fiber are a sizeable bundle (~600KB) — split into their own chunk and
-// loaded only once the page is interactive, instead of blocking the initial paint of the glass
-// UI it sits behind.
-const HologramScene = lazy(() => import('@/Components/Kiosk/HologramScene'));
+import HologramEmblem from '@/Components/Kiosk/HologramEmblem';
 
 /**
  * The shared "Liquid Glass" backdrop for every screen — a warm, light surface with soft
@@ -33,12 +29,10 @@ export default function CosmicBackground({ className = '', children }: PropsWith
             <div className="pointer-events-none absolute -right-1/4 top-1/3 h-[440px] w-[440px] rounded-full bg-teal-300/35 blur-[120px]" />
             <div className="pointer-events-none absolute bottom-[-20%] left-1/3 h-[400px] w-[400px] rounded-full bg-pink-300/30 blur-[120px]" />
 
-            {/* The glossy floating-orb 3D scene — a nod to the ghaisansyams.vercel.app hero,
-                recolored to this UI's palette. Lazy-loaded and given a generous opacity fade-in
-                so it never flashes in abruptly once the WebGL chunk finishes downloading. */}
-            <Suspense fallback={null}>
-                <HologramScene className="absolute -right-6 -top-2 h-[170px] w-[160px] opacity-65 sm:h-[340px] sm:w-[320px]" />
-            </Suspense>
+            {/* An original hologram emblem — spinning rings, a faceted glass core and a
+                projector-style sweep, built in plain SVG/CSS rather than a 3D scene, so it's
+                effectively free to render on booth hardware. */}
+            <HologramEmblem className="absolute right-1 top-20 h-[150px] w-[150px] opacity-75 sm:h-[260px] sm:w-[260px]" />
 
             {/* A soft, slowly-breathing glow behind whatever sits at the top of each screen
                 (the hero icon, a game's logo) — gives the page a single clear focal point
