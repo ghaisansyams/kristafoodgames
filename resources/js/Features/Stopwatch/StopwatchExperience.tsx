@@ -79,16 +79,6 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
         setPhase('idle');
     }
 
-    // Space's fast path on the result screen: reset and start the next attempt in one press,
-    // rather than resetting to idle and waiting for a second press. The on-screen "Play Again"
-    // button stays a single reset-to-idle step — this shortcut is specifically for the
-    // keyboard/physical-button path.
-    function playAgainAndStart() {
-        setFinalElapsed(null);
-        setPausedElapsed(0);
-        startFresh();
-    }
-
     // Arms a 1-second auto-commit timer for the press that just started, snapshotting the
     // phase/paused value as of press time — nothing else changes `phase` mid-hold, so this
     // snapshot stays valid for the life of the timer.
@@ -139,7 +129,9 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
                 return;
             }
             if (phase === 'result') {
-                playAgainAndStart();
+                // Resets to 00.00 and waits for a separate press to actually start — jumping
+                // straight into a running clock caught players off guard.
+                playAgain();
                 return;
             }
             if (keyHoldTimeoutRef.current !== null) return;
