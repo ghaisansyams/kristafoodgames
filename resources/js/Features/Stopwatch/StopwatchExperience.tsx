@@ -10,11 +10,11 @@ const WIN_TOLERANCE = 0.15;
 
 // Holding the button/Space for this long auto-commits whatever time is showing as the final
 // result — it fires on its own, mid-hold, with no release needed (the booth's physical button
-// will work the same way: hold it down, and at the 2-second mark it locks in on its own).
+// will work the same way: hold it down, and at the 1-second mark it locks in on its own).
 // Releasing before this mark is just a short tap, which toggles pause/resume instead. Without
 // this, a player could tap Space once a second, read the frozen number, and creep toward
 // exactly 10.00 one pause at a time.
-const LOCK_IN_HOLD_MS = 2000;
+const LOCK_IN_HOLD_MS = 1000;
 
 type Phase = 'idle' | 'running' | 'paused' | 'result';
 
@@ -79,7 +79,7 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
         setPhase('idle');
     }
 
-    // Arms a 2-second auto-commit timer for the press that just started, snapshotting the
+    // Arms a 1-second auto-commit timer for the press that just started, snapshotting the
     // phase/paused value as of press time — nothing else changes `phase` mid-hold, so this
     // snapshot stays valid for the life of the timer.
     function armLockIn(timeoutRef: React.MutableRefObject<number | null>) {
