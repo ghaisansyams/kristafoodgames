@@ -29,11 +29,6 @@ export default function CosmicBackground({ className = '', children }: PropsWith
             <div className="pointer-events-none absolute -right-1/4 top-1/3 h-[440px] w-[440px] rounded-full bg-teal-300/35 blur-[120px]" />
             <div className="pointer-events-none absolute bottom-[-20%] left-1/3 h-[400px] w-[400px] rounded-full bg-pink-300/30 blur-[120px]" />
 
-            {/* An original hologram emblem — spinning rings, a faceted glass core and a
-                projector-style sweep, built in plain SVG/CSS rather than a 3D scene, so it's
-                effectively free to render on booth hardware. */}
-            <HologramEmblem className="absolute right-1 top-20 h-[150px] w-[150px] opacity-75 sm:h-[260px] sm:w-[260px]" />
-
             {/* A soft, slowly-breathing glow behind whatever sits at the top of each screen
                 (the hero icon, a game's logo) — gives the page a single clear focal point
                 instead of three equally-weighted blobs. */}
@@ -41,6 +36,12 @@ export default function CosmicBackground({ className = '', children }: PropsWith
                 className="pointer-events-none absolute left-1/2 top-24 h-[260px] w-[260px] -translate-x-1/2 rounded-full bg-white/60 blur-[90px]"
                 style={{ animation: 'glow-breathe 6s ease-in-out infinite' }}
             />
+
+            {/* The holographic product display — pinned to the bottom of the *viewport* (not
+                the full scrollable page) rather than the header, so it fills the empty space
+                below short content (like the two-card game grid) without landing mid-content
+                on taller screens that need to scroll. */}
+            <HologramEmblem className="fixed bottom-0 left-1/2 h-[320px] w-[300px] -translate-x-1/2 opacity-80 sm:h-[400px] sm:w-[360px]" />
 
             <style>{`
                 @keyframes glow-breathe {
