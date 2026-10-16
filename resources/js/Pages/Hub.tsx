@@ -4,6 +4,7 @@ import QrCodeImage from '@/Components/Kiosk/QrCodeImage';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
 import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
+import SponsorLogos from '@/Components/Kiosk/SponsorLogos';
 import { DecisionLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { useBoothSession } from '@/lib/useBoothSession';
 import { useIdleReset } from '@/lib/useIdleReset';
@@ -74,6 +75,7 @@ function HubScreen() {
 
             {screen === 'idle' && QR_JOIN_ENABLED && (
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                    <SponsorLogos className="mt-10" />
                     <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">{t('heroEyebrow')}</p>
                     <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-slate-900">
@@ -110,6 +112,7 @@ function HubScreen() {
                     onClick={goToChoose}
                     className="flex min-h-screen w-full flex-col items-center justify-center gap-6 px-6 py-10 text-center"
                 >
+                    <SponsorLogos className="mt-10" />
                     <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">{t('heroEyebrow')}</p>
                     <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-slate-900">
@@ -130,6 +133,7 @@ function HubScreen() {
                     <div className="flex w-full max-w-md items-center justify-end pt-2">
                         <LanguageSwitcher />
                     </div>
+                    <SponsorLogos />
                     <div className="pt-4">
                         <p className="font-display mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
                             {t('chooseEyebrow')}
