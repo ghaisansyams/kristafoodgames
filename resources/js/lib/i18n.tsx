@@ -6,7 +6,6 @@ const STORAGE_KEY = 'allpack.locale';
 
 const dict = {
     id: {
-        heroEyebrow: 'ALLPACK 2026 · Hub Pengalaman Interaktif',
         heroLine1: 'BERMAIN DAN',
         heroLine2: 'DAPATKAN HADIAH',
         scanToPlay: 'Pindai untuk Bermain',
@@ -96,7 +95,6 @@ const dict = {
         timeRemaining: 'Sisa Waktu',
     },
     en: {
-        heroEyebrow: 'ALLPACK 2026 · Interactive Experience Hub',
         heroLine1: 'PLAY AND',
         heroLine2: 'WIN PRIZES',
         scanToPlay: 'Scan to Play',
@@ -186,7 +184,6 @@ const dict = {
         timeRemaining: 'Time Remaining',
     },
     zh: {
-        heroEyebrow: 'ALLPACK 2026 · 互动体验中心',
         heroLine1: '畅玩游戏',
         heroLine2: '赢取好礼',
         scanToPlay: '扫码开始游戏',

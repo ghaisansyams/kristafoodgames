@@ -67,7 +67,7 @@ function HubScreen() {
         <CosmicBackground>
             <Head title="ALLPACK 2026 — Interactive Experience Hub" />
 
-            {screen === 'idle' && (
+            {(screen === 'idle' || screen === 'choose') && (
                 <div className="absolute right-6 top-6 z-20">
                     <LanguageSwitcher />
                 </div>
@@ -76,7 +76,6 @@ function HubScreen() {
             {screen === 'idle' && QR_JOIN_ENABLED && (
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
-                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">{t('heroEyebrow')}</p>
                     <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-slate-900">
                         {t('heroLine1')}
@@ -113,7 +112,6 @@ function HubScreen() {
                     className="flex min-h-screen w-full flex-col items-center justify-center gap-6 px-6 py-10 text-center"
                 >
                     <SponsorLogos className="mt-10" />
-                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">{t('heroEyebrow')}</p>
                     <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-slate-900">
                         {t('heroLine1')}
@@ -130,10 +128,7 @@ function HubScreen() {
 
             {screen === 'choose' && (
                 <div className="flex min-h-screen flex-col items-center gap-6 px-6 py-10 text-center">
-                    <div className="flex w-full max-w-md items-center justify-end pt-2">
-                        <LanguageSwitcher />
-                    </div>
-                    <SponsorLogos />
+                    <SponsorLogos className="mt-10" />
                     <div className="pt-4">
                         <p className="font-display mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
                             {t('chooseEyebrow')}
