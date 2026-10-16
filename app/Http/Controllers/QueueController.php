@@ -35,8 +35,10 @@ class QueueController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'company' => ['required', 'string', 'max:255'],
+            'job_title' => ['required', 'string', 'max:255'],
             'contact' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
         ]);
 
         $visitor = Visitor::create($data);

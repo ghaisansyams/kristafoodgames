@@ -15,7 +15,10 @@ class QueueSystemTest extends TestCase
     {
         $response = $this->post('/queue/join', [
             'name' => 'Rina',
+            'company' => 'Food Co',
+            'job_title' => 'Buyer',
             'contact' => '08123456789',
+            'email' => 'rina@foodco.com',
         ]);
 
         $ticket = QueueTicket::firstOrFail();
@@ -28,8 +31,20 @@ class QueueSystemTest extends TestCase
 
     public function test_ticket_numbers_increment_within_the_same_day(): void
     {
-        $this->post('/queue/join', ['name' => 'Rina', 'contact' => '08123456789']);
-        $this->post('/queue/join', ['name' => 'Budi', 'contact' => '08129876543']);
+        $this->post('/queue/join', [
+            'name' => 'Rina',
+            'company' => 'Food Co',
+            'job_title' => 'Buyer',
+            'contact' => '08123456789',
+            'email' => 'rina@foodco.com',
+        ]);
+        $this->post('/queue/join', [
+            'name' => 'Budi',
+            'company' => 'Snack Inc',
+            'job_title' => 'Procurement',
+            'contact' => '08129876543',
+            'email' => 'budi@snackinc.com',
+        ]);
 
         $numbers = QueueTicket::orderBy('id')->pluck('number')->all();
 

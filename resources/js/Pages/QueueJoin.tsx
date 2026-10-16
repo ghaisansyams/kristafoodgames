@@ -18,11 +18,18 @@ function QueueJoinScreen() {
     const { t } = useLocale();
     const form = useForm({
         name: '',
+        company: '',
+        job_title: '',
         contact: '',
         email: '',
     });
 
-    const isValid = form.data.name.trim().length > 0 && form.data.contact.trim().length > 0;
+    const isValid =
+        form.data.name.trim().length > 0 &&
+        form.data.company.trim().length > 0 &&
+        form.data.job_title.trim().length > 0 &&
+        form.data.contact.trim().length > 0 &&
+        form.data.email.trim().length > 0;
 
     function submit(e: FormEvent) {
         e.preventDefault();
@@ -53,6 +60,18 @@ function QueueJoinScreen() {
                         error={form.errors.name}
                     />
                     <Field
+                        placeholder={t('companyOrInstitution')}
+                        value={form.data.company}
+                        onChange={(v) => form.setData('company', v)}
+                        error={form.errors.company}
+                    />
+                    <Field
+                        placeholder={t('jobTitle')}
+                        value={form.data.job_title}
+                        onChange={(v) => form.setData('job_title', v)}
+                        error={form.errors.job_title}
+                    />
+                    <Field
                         placeholder={t('phoneNumber')}
                         type="tel"
                         value={form.data.contact}
@@ -60,7 +79,7 @@ function QueueJoinScreen() {
                         error={form.errors.contact}
                     />
                     <Field
-                        placeholder={t('emailOptional')}
+                        placeholder={t('email')}
                         type="email"
                         value={form.data.email}
                         onChange={(v) => form.setData('email', v)}
