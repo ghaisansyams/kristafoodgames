@@ -6,14 +6,14 @@
  * anchoring it to the bottom of the screen means it also fills the empty space below a
  * two-card game grid instead of competing with the header for attention.
  */
-export default function HologramEmblem({ className = '' }: { className?: string }) {
+export default function HologramEmblem({ className = '', paused = false }: { className?: string; paused?: boolean }) {
     return (
         // No `relative` here on purpose — the caller's `className` supplies the positioning
         // class (normally `absolute ...`), and stacking that with a hardcoded `relative` here
         // would fight it: Tailwind's generated stylesheet order, not className order, decides
         // which `position` utility wins, so the last one actually matters and the bug is easy
         // to reintroduce by "helpfully" adding `relative` back here.
-        <div className={`pointer-events-none select-none ${className}`}>
+        <div className={`pointer-events-none select-none ${paused ? 'holo-paused' : ''} ${className}`}>
             <svg viewBox="0 0 320 420" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMax meet">
                 <defs>
                     <linearGradient id="holo-beam" x1="0" y1="1" x2="0" y2="0">
@@ -42,6 +42,7 @@ export default function HologramEmblem({ className = '' }: { className?: string 
                     stroke="#5eead4"
                     strokeOpacity="0.4"
                     strokeWidth="1"
+                    className="holo-anim"
                     style={{ transformOrigin: '160px 404px', animation: 'holo-ring-pulse 3s ease-in-out infinite' }}
                 />
             </svg>
@@ -50,7 +51,7 @@ export default function HologramEmblem({ className = '' }: { className?: string 
                 color, held together by real browser 3D transforms and spun on a slow loop. */}
             <div className="absolute left-1/2 top-[26%] -translate-x-1/2" style={{ perspective: '700px' }}>
                 <div
-                    className="holo-cube"
+                    className="holo-cube holo-anim"
                     style={{ animation: 'holo-cube-spin 11s linear infinite, holo-bob 4s ease-in-out infinite' }}
                 >
                     <div className="holo-face holo-face-front" />
@@ -66,7 +67,7 @@ export default function HologramEmblem({ className = '' }: { className?: string 
                 "hologram projector" cue, kept subtle so it reads as a detail, not a strobe. */}
             <div className="absolute left-1/2 top-[14%] h-[150px] w-[150px] -translate-x-1/2 overflow-hidden" style={{ perspective: '700px' }}>
                 <div
-                    className="h-6 w-full"
+                    className="holo-anim h-6 w-full"
                     style={{
                         background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.9), transparent)',
                         animation: 'holo-sweep 3.2s ease-in-out infinite',
@@ -112,6 +113,14 @@ export default function HologramEmblem({ className = '' }: { className?: string 
                 @keyframes holo-ring-pulse {
                     0%, 100% { opacity: 0.5; transform: scale(1); }
                     50% { opacity: 1; transform: scale(1.15); }
+                }
+
+                /* Frozen (not hidden) while a precision game like Stop at 10.00 is running, so
+                   the moving hologram never competes for the player's attention — !important
+                   is needed here because inline style="animation:..." on these elements would
+                   otherwise always win over a class-based rule, paused or not. */
+                .holo-paused .holo-anim {
+                    animation-play-state: paused !important;
                 }
             `}</style>
         </div>

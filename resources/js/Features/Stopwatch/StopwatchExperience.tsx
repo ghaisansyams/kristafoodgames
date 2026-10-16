@@ -18,7 +18,15 @@ const LOCK_IN_HOLD_MS = 1000;
 
 type Phase = 'idle' | 'running' | 'paused' | 'result';
 
-export default function StopwatchExperience({ visitorId, onBack }: { visitorId: number | null; onBack: () => void }) {
+export default function StopwatchExperience({
+    visitorId,
+    onBack,
+    onRunningChange,
+}: {
+    visitorId: number | null;
+    onBack: () => void;
+    onRunningChange?: (running: boolean) => void;
+}) {
     const { t } = useLocale();
     const [phase, setPhase] = useState<Phase>('idle');
     const [elapsed, setElapsed] = useState(0);
@@ -28,6 +36,16 @@ export default function StopwatchExperience({ visitorId, onBack }: { visitorId: 
     const frameRef = useRef<number>();
     const keyHoldTimeoutRef = useRef<number | null>(null);
     const pointerHoldTimeoutRef = useRef<number | null>(null);
+
+    // Tells the booth background to freeze the hologram while the clock is actually running —
+    // a moving 3D display behind a precision-timing game is exactly the kind of distraction
+    // this game can't afford. Also fires on unmount so leaving mid-run never leaves the
+    // hologram stuck paused.
+    useEffect(() => {
+        onRunningChange?.(phase === 'running');
+        return () => onRunningChange?.(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [phase]);
 
     useEffect(() => {
         if (phase !== 'running') return;

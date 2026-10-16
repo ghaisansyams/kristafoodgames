@@ -9,7 +9,11 @@ import HologramEmblem from '@/Components/Kiosk/HologramEmblem';
  * (CosmicBackground) even though the look is no longer dark/cosmic, since every screen still
  * imports it by that name.
  */
-export default function CosmicBackground({ className = '', children }: PropsWithChildren<{ className?: string }>) {
+export default function CosmicBackground({
+    className = '',
+    pauseHologram = false,
+    children,
+}: PropsWithChildren<{ className?: string; pauseHologram?: boolean }>) {
     return (
         <div className={`relative min-h-screen overflow-hidden bg-gradient-to-br from-[#faf7f0] via-[#f3ede0] to-[#eae1d2] ${className}`}>
             {/* Injected once here (not per-screen) so every game's animated logo keeps its
@@ -41,7 +45,10 @@ export default function CosmicBackground({ className = '', children }: PropsWith
                 the full scrollable page) rather than the header, so it fills the empty space
                 below short content (like the two-card game grid) without landing mid-content
                 on taller screens that need to scroll. */}
-            <HologramEmblem className="fixed bottom-0 left-1/2 h-[320px] w-[300px] -translate-x-1/2 opacity-80 sm:h-[400px] sm:w-[360px]" />
+            <HologramEmblem
+                paused={pauseHologram}
+                className="fixed bottom-0 left-1/2 h-[320px] w-[300px] -translate-x-1/2 opacity-80 sm:h-[400px] sm:w-[360px]"
+            />
 
             <style>{`
                 @keyframes glow-breathe {

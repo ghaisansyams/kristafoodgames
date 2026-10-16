@@ -41,6 +41,7 @@ function HubScreen() {
     const [visitorId, setVisitorId] = useState<number | null>(null);
     const [calledTicket, setCalledTicket] = useState<QueueTicketSummary | null>(null);
     const [countdown, setCountdown] = useState(CALL_GRACE_SECONDS);
+    const [stopwatchRunning, setStopwatchRunning] = useState(false);
     const currentTicketIdRef = useRef<number | null>(null);
 
     const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
@@ -142,7 +143,7 @@ function HubScreen() {
     }
 
     return (
-        <CosmicBackground>
+        <CosmicBackground pauseHologram={stopwatchRunning}>
             <Head title="KRISTA FOOD 2026 — Interactive Experience Hub" />
 
             {(screen === 'idle' || screen === 'called' || screen === 'choose') && (
@@ -214,7 +215,9 @@ function HubScreen() {
             {screen !== 'idle' && screen !== 'called' && screen !== 'choose' && (
                 <>
                     {screen === 'decision_lab' && <DecisionLabExperience visitorId={visitorId} onBack={goToChoose} />}
-                    {screen === 'stopwatch' && <StopwatchExperience visitorId={visitorId} onBack={goToChoose} />}
+                    {screen === 'stopwatch' && (
+                        <StopwatchExperience visitorId={visitorId} onBack={goToChoose} onRunningChange={setStopwatchRunning} />
+                    )}
                 </>
             )}
         </CosmicBackground>
