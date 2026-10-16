@@ -26,7 +26,7 @@ type Stage = 'loading' | 'start' | 'business_case' | 'market' | 'priorities' | '
 // business case content — a placeholder visual treatment until case-specific photography exists.
 const OPTION_IMAGES = ['/images/packaging/option-a.png', '/images/packaging/option-b.png', '/images/packaging/option-c.png'];
 
-const STORAGE_KEY = 'allpack.decision-lab.v1';
+const STORAGE_KEY = 'krista-food.decision-lab.v1';
 
 interface PersistedState {
     stage: Stage;

@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\PackagingOptionController;
 use App\Http\Controllers\Admin\PriorityController;
 use Illuminate\Support\Facades\Route;
 
-// The content admin for ALLPACK 2026: manages everything the proposal calls out as needing
+// The content admin for Krista Food 2026: manages everything the proposal calls out as needing
 // to change without a rebuild (business cases, markets, priorities, packaging option scores)
 // plus a leads report. Gated by login only — see routes/auth.php for why
 // self-registration is disabled.

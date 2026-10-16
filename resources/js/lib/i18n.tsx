@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type PropsWithChildren 
 
 export type Locale = 'id' | 'en' | 'zh';
 
-const STORAGE_KEY = 'allpack.locale';
+const STORAGE_KEY = 'krista-food.locale';
 
 const dict = {
     id: {
@@ -62,7 +62,7 @@ const dict = {
         yourStrength: 'Kekuatan Anda',
         yourProfile: 'Profil Anda',
         yourTradeOff: 'Kompromi Anda',
-        solutionLabel: 'Solusi ALLPACK',
+        solutionLabel: 'Solusi KRISTA FOOD',
         emailFormPrompt: 'Masukkan email Anda dan tim kami akan mengirimkan hasil ini.',
         sending: 'Mengirim…',
         send: 'Kirim',
@@ -75,7 +75,7 @@ const dict = {
 
         alreadyClaimedTitle: 'Kode QR ini sudah digunakan',
         alreadyClaimedBody: 'Minta kru booth untuk menampilkan kode QR baru di layar.',
-        brandLine: 'ALLPACK 2026',
+        brandLine: 'KRISTA FOOD 2026',
         joinTitle: 'Ayo Mulai!',
         joinSubtitle: 'Isi data Anda, lalu lihat kembali ke layar booth.',
         fullName: 'Nama Lengkap',
@@ -111,7 +111,7 @@ const dict = {
         queueStatusWaiting: 'Mohon tunggu, kami akan memanggil nomor Anda di sini.',
         queueNowServingLine: 'Sedang dilayani: #{number}',
         queueYourTurnTitle: 'GILIRAN ANDA!',
-        queueYourTurnBody: 'Silakan langsung ke booth ALLPACK sekarang.',
+        queueYourTurnBody: 'Silakan langsung ke booth KRISTA FOOD sekarang.',
         queueNowPlaying: 'Anda sedang bermain di booth. Selamat bersenang-senang!',
         queueThanksPlayed: 'Terima kasih sudah bermain! Sampai jumpa lagi.',
         queueMissedTurnTitle: 'Nomor Anda Terlewat',
@@ -180,7 +180,7 @@ const dict = {
         yourStrength: 'Your Strength',
         yourProfile: 'Your Profile',
         yourTradeOff: 'Your Trade-off',
-        solutionLabel: 'ALLPACK Solution',
+        solutionLabel: 'KRISTA FOOD Solution',
         emailFormPrompt: 'Enter your email and our team will send you this result.',
         sending: 'Sending…',
         send: 'Send',
@@ -193,7 +193,7 @@ const dict = {
 
         alreadyClaimedTitle: 'This QR code has already been used',
         alreadyClaimedBody: 'Ask the booth crew to show you a fresh QR code on the screen.',
-        brandLine: 'ALLPACK 2026',
+        brandLine: 'KRISTA FOOD 2026',
         joinTitle: "Let's Get Started!",
         joinSubtitle: 'Fill in your details, then look back at the booth screen.',
         fullName: 'Full Name',
@@ -229,7 +229,7 @@ const dict = {
         queueStatusWaiting: "Hang tight — we'll call your number right here.",
         queueNowServingLine: 'Now serving: #{number}',
         queueYourTurnTitle: "IT'S YOUR TURN!",
-        queueYourTurnBody: 'Please head to the ALLPACK booth now.',
+        queueYourTurnBody: 'Please head to the KRISTA FOOD booth now.',
         queueNowPlaying: "You're playing at the booth now. Have fun!",
         queueThanksPlayed: 'Thanks for playing! See you again.',
         queueMissedTurnTitle: 'Your Turn Was Missed',
@@ -297,7 +297,7 @@ const dict = {
         yourStrength: '您的优势',
         yourProfile: '您的画像',
         yourTradeOff: '您的权衡',
-        solutionLabel: 'ALLPACK 解决方案',
+        solutionLabel: 'KRISTA FOOD 解决方案',
         emailFormPrompt: '输入您的电子邮件，我们的团队会将此结果发送给您。',
         sending: '发送中…',
         send: '发送',
@@ -310,7 +310,7 @@ const dict = {
 
         alreadyClaimedTitle: '此二维码已被使用',
         alreadyClaimedBody: '请booth工作人员在屏幕上显示新的二维码。',
-        brandLine: 'ALLPACK 2026',
+        brandLine: 'KRISTA FOOD 2026',
         joinTitle: '让我们开始吧！',
         joinSubtitle: '填写您的信息，然后返回查看展台屏幕。',
         fullName: '姓名',
@@ -346,7 +346,7 @@ const dict = {
         queueStatusWaiting: '请稍候，我们会在这里叫您的号码。',
         queueNowServingLine: '正在服务：#{number}',
         queueYourTurnTitle: '轮到您了！',
-        queueYourTurnBody: '请立即前往 ALLPACK 展台。',
+        queueYourTurnBody: '请立即前往 KRISTA FOOD 展台。',
         queueNowPlaying: '您正在展台游戏中，祝您玩得开心！',
         queueThanksPlayed: '感谢您的参与！期待再次光临。',
         queueMissedTurnTitle: '您的号码已过号',

@@ -2,7 +2,7 @@
  * An original "holographic product display" for the kiosk — a real CSS 3D box (six faces,
  * genuine rotateX/rotateY transforms, no WebGL) floating above a glowing projector base, with
  * a light beam connecting them and a scan-line sweep crossing the box on a loop. A rotating
- * box reads as "packaging" rather than a generic shape, which fits ALLPACK specifically, and
+ * box reads as "packaging" rather than a generic shape, which fits Krista Food specifically, and
  * anchoring it to the bottom of the screen means it also fills the empty space below a
  * two-card game grid instead of competing with the header for attention.
  */

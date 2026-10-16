@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
  *
  * Every packaging option's 1-5 factor scores are illustrative game-model values so the
  * experience is demoable end-to-end. Per the proposal (slide 10C, "Perlu validasi"), these
- * must be replaced with real figures validated by the ALLPACK product/technical team before
+ * must be replaced with real figures validated by the Krista Food product/technical team before
  * the booth goes live. Swap the arrays below — the scoring engine and UI need no changes.
  */
 class ContentSeeder extends Seeder

@@ -16,7 +16,7 @@ function JoinThanksScreen() {
 
     return (
         <CosmicBackground>
-            <Head title="ALLPACK 2026 — You're In!" />
+            <Head title="KRISTA FOOD 2026 — You're In!" />
             <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
                 <PartyPopper className="h-20 w-20 animate-bounce text-indigo-500" strokeWidth={1.5} />
                 <h1 className="font-display text-2xl font-black uppercase text-slate-900">{t('allSetTitle')}</h1>

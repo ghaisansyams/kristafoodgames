@@ -26,7 +26,7 @@ export default function AdminLayout({ title, children }: PropsWithChildren<{ tit
         <div className="flex min-h-screen bg-slate-50">
             <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
                 <div className="border-b border-slate-200 px-6 py-5">
-                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">ALLPACK 2026</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">KRISTA FOOD 2026</p>
                     <p className="text-lg font-black text-slate-900">Content Admin</p>
                 </div>
                 <nav className="flex-1 space-y-1 p-3">

@@ -143,7 +143,7 @@ function HubScreen() {
 
     return (
         <CosmicBackground>
-            <Head title="ALLPACK 2026 — Interactive Experience Hub" />
+            <Head title="KRISTA FOOD 2026 — Interactive Experience Hub" />
 
             {(screen === 'idle' || screen === 'called' || screen === 'choose') && (
                 <div className="absolute right-6 top-6 z-20">

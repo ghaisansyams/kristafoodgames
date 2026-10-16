@@ -35,7 +35,7 @@ function JoinScreen({ token, alreadyClaimed }: { token: string; alreadyClaimed: 
     if (alreadyClaimed) {
         return (
             <CosmicBackground>
-                <Head title="ALLPACK — Join" />
+                <Head title="KRISTA FOOD — Join" />
                 <div className="absolute right-6 top-6 z-20">
                     <LanguageSwitcher />
                 </div>
@@ -50,7 +50,7 @@ function JoinScreen({ token, alreadyClaimed }: { token: string; alreadyClaimed: 
 
     return (
         <CosmicBackground>
-            <Head title="ALLPACK 2026 — Join" />
+            <Head title="KRISTA FOOD 2026 — Join" />
 
             <div className="absolute right-6 top-6 z-20">
                 <LanguageSwitcher />

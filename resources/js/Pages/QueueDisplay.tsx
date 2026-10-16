@@ -44,7 +44,7 @@ function QueueDisplayScreen() {
 
     return (
         <CosmicBackground>
-            <Head title="ALLPACK 2026 — Ambil Nomor Antrian" />
+            <Head title="KRISTA FOOD 2026 — Ambil Nomor Antrian" />
 
             <div className="absolute right-6 top-6 z-20">
                 <LanguageSwitcher />

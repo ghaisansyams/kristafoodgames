@@ -66,7 +66,7 @@ class LeadController extends Controller
 
         return response(implode("\n", $rows), 200, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="allpack-leads-'.now()->format('Y-m-d-His').'.csv"',
+            'Content-Disposition' => 'attachment; filename="krista-food-leads-'.now()->format('Y-m-d-His').'.csv"',
         ]);
     }
 }

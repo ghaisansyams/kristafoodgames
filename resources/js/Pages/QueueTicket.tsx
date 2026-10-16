@@ -64,7 +64,7 @@ function QueueTicketScreen({ initialTicket }: { initialTicket: TicketProp }) {
 
     return (
         <CosmicBackground>
-            <Head title="ALLPACK 2026 — Nomor Antrian Anda" />
+            <Head title="KRISTA FOOD 2026 — Nomor Antrian Anda" />
 
             <div className="absolute right-6 top-6 z-20">
                 <LanguageSwitcher />

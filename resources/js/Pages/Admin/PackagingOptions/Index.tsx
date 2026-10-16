@@ -133,7 +133,7 @@ export default function Index({
                 <p className="max-w-2xl text-sm text-slate-500">
                     The 3 solutions shown per business case at Stage 6, with the 1–5 factor scores the scoring engine
                     uses. These are placeholder game-model values — replace them with figures validated by the
-                    ALLPACK product/technical team.
+                    Krista Food product/technical team.
                 </p>
                 <div className="flex items-center gap-3">
                     <select
