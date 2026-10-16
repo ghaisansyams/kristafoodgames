@@ -1,26 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Head } from '@inertiajs/react';
-import QrCodeImage from '@/Components/Kiosk/QrCodeImage';
+import { Sparkles } from 'lucide-react';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
 import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
 import SponsorLogos from '@/Components/Kiosk/SponsorLogos';
+import TouchButton from '@/Components/Kiosk/TouchButton';
 import { DecisionLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
-import { useBoothSession } from '@/lib/useBoothSession';
 import { useIdleReset } from '@/lib/useIdleReset';
 import { LocaleProvider, useLocale } from '@/lib/i18n';
+import { QueueApi, type QueueTicketSummary } from '@/lib/api';
 import DecisionLabExperience from '@/Features/DecisionLab/DecisionLabExperience';
 import StopwatchExperience from '@/Features/Stopwatch/StopwatchExperience';
 
-type Screen = 'idle' | 'choose' | 'decision_lab' | 'stopwatch';
+type Screen = 'idle' | 'called' | 'choose' | 'decision_lab' | 'stopwatch';
 
-// Visitors scan this to fill their details on their own phone, then get bounced back here
-// automatically — needs two requests (booth creates the session, phone claims it) to land on
-// the same backend state, which real booth hardware (one machine, one SQLite file) guarantees
-// but an ephemeral container deployment (e.g. the Vercel demo build) does not: a recycled
-// instance can lose the session between those two requests. Baked off there via
-// VITE_QR_JOIN_ENABLED=false at build time; defaults on everywhere else.
-const QR_JOIN_ENABLED = import.meta.env.VITE_QR_JOIN_ENABLED !== 'false';
+// How long a called visitor has to walk over and tap "I'm Here" before the booth gives up on
+// them and calls the next number — long enough to cross a busy exhibition hall, short enough
+// that the queue keeps moving if someone wandered off.
+const CALL_GRACE_SECONDS = 45;
+
+// While idle (nobody being served), how often the booth checks whether a new queue ticket
+// should be called — there's no WebSocket push here (Vercel's serverless functions can't host
+// one), so this poll is what actually moves the queue forward.
+const IDLE_POLL_MS = 4000;
 
 type LogoComponent = (props: { className?: string }) => JSX.Element;
 
@@ -36,44 +39,119 @@ function HubScreen() {
     const { t } = useLocale();
     const [screen, setScreen] = useState<Screen>('idle');
     const [visitorId, setVisitorId] = useState<number | null>(null);
-
-    const { token, visitorId: joinedVisitorId } = useBoothSession(QR_JOIN_ENABLED && screen === 'idle');
+    const [calledTicket, setCalledTicket] = useState<QueueTicketSummary | null>(null);
+    const [countdown, setCountdown] = useState(CALL_GRACE_SECONDS);
+    const currentTicketIdRef = useRef<number | null>(null);
 
     const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
         { screen: 'decision_lab', title: t('gameDecisionLabTitle'), tagline: t('gameDecisionLabTagline'), Logo: DecisionLogo },
         { screen: 'stopwatch', title: t('gameStopwatchTitle'), tagline: t('gameStopwatchTagline'), Logo: StopwatchLogo },
     ];
 
-    useEffect(() => {
-        if (joinedVisitorId) {
-            setVisitorId(joinedVisitorId);
-            setScreen('choose');
-        }
-    }, [joinedVisitorId]);
-
     const goToChoose = useCallback(() => setScreen('choose'), []);
+
+    // Marks whatever ticket was just playing as done (if any), then checks whether the queue
+    // has someone else waiting — used by "I'm Done", the idle-abandon timeout, and a missed
+    // call-screen window alike, so every exit path moves the queue forward the same way.
     const resetToIdle = useCallback(() => {
+        const finishedTicketId = currentTicketIdRef.current;
+        currentTicketIdRef.current = null;
         setVisitorId(null);
+        setCalledTicket(null);
         setScreen('idle');
+
+        QueueApi.advance(finishedTicketId)
+            .then((current) => {
+                if (current && current.status === 'called') {
+                    setCalledTicket(current);
+                    setScreen('called');
+                }
+            })
+            .catch(() => {});
     }, []);
 
     // An abandoned session (visitor walked off mid-game) shouldn't block the booth for the
-    // next person — bounce back to the QR screen after a stretch of no touch activity.
+    // next person — bounce back to idle (and advance the queue) after a stretch of no touch
+    // activity.
     useIdleReset(resetToIdle, 90_000, screen !== 'idle');
 
-    const joinUrl = token ? `${window.location.origin}/join/${token}` : '';
+    // While idle, keep polling to see if the queue should call someone — this is what picks
+    // up a ticket taken on the tablet while the booth has nobody waiting at all.
+    useEffect(() => {
+        if (screen !== 'idle') return;
+
+        let cancelled = false;
+
+        function poll() {
+            QueueApi.advance(null)
+                .then((current) => {
+                    if (cancelled || !current) return;
+                    if (current.status === 'called') {
+                        setCalledTicket(current);
+                        setScreen('called');
+                    }
+                })
+                .catch(() => {});
+        }
+
+        poll();
+        const interval = window.setInterval(poll, IDLE_POLL_MS);
+        return () => {
+            cancelled = true;
+            window.clearInterval(interval);
+        };
+    }, [screen]);
+
+    // The call-screen grace countdown — ticks down once a ticket is called, and auto-skips
+    // the visitor (freeing the booth for the next number) if they never tap "I'm Here".
+    useEffect(() => {
+        if (screen !== 'called' || !calledTicket) return;
+
+        setCountdown(CALL_GRACE_SECONDS);
+        const ticketId = calledTicket.id;
+
+        const interval = window.setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    window.clearInterval(interval);
+                    QueueApi.skip(ticketId)
+                        .catch(() => {})
+                        .finally(() => {
+                            setCalledTicket(null);
+                            setScreen('idle');
+                        });
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => window.clearInterval(interval);
+    }, [screen, calledTicket]);
+
+    function handleImHere() {
+        if (!calledTicket) return;
+        QueueApi.confirm(calledTicket.id)
+            .then((confirmedVisitorId) => {
+                currentTicketIdRef.current = calledTicket.id;
+                setVisitorId(confirmedVisitorId);
+                setCalledTicket(null);
+                setScreen('choose');
+            })
+            .catch(() => {});
+    }
 
     return (
         <CosmicBackground>
             <Head title="ALLPACK 2026 — Interactive Experience Hub" />
 
-            {(screen === 'idle' || screen === 'choose') && (
+            {(screen === 'idle' || screen === 'called' || screen === 'choose') && (
                 <div className="absolute right-6 top-6 z-20">
                     <LanguageSwitcher />
                 </div>
             )}
 
-            {screen === 'idle' && QR_JOIN_ENABLED && (
+            {screen === 'idle' && (
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
                     <StopwatchLogo className="h-32 w-32" />
@@ -85,19 +163,11 @@ function HubScreen() {
                         </span>
                     </h1>
 
-                    <div className="rounded-3xl border border-white/70 bg-white/50 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
-                        {token ? <QrCodeImage value={joinUrl} /> : <div className="h-56 w-56 animate-pulse rounded-2xl bg-white/60" />}
-                    </div>
-
-                    <div>
-                        <p className="font-display text-lg font-bold text-indigo-600">{t('scanToPlay')}</p>
-                        <p className="max-w-xs text-sm text-slate-600">{t('scanInstructions')}</p>
-                    </div>
+                    <p className="max-w-xs text-sm text-slate-600">{t('idleTakeTicket')}</p>
 
                     {/* For visitors already in the company's own customer database who'd rather
-                        not re-enter their details here — goes straight to the games, no
-                        visitor record attached (so results won't show up under their name on
-                        the leaderboard). */}
+                        not queue for a ticket — goes straight to the games, no visitor record
+                        attached (so results won't show up under their name on the leaderboard). */}
                     <button onClick={goToChoose} className="text-sm text-slate-500 underline hover:text-slate-700">
                         {t('skipAndPlay')}
                     </button>
@@ -106,24 +176,17 @@ function HubScreen() {
                 </div>
             )}
 
-            {screen === 'idle' && !QR_JOIN_ENABLED && (
-                <button
-                    onClick={goToChoose}
-                    className="flex min-h-screen w-full flex-col items-center justify-center gap-6 px-6 py-10 text-center"
-                >
-                    <SponsorLogos className="mt-10" />
-                    <StopwatchLogo className="h-32 w-32" />
-                    <h1 className="font-display text-5xl font-black uppercase leading-tight text-slate-900">
-                        {t('heroLine1')}
-                        <br />
-                        <span className="bg-gradient-to-r from-indigo-400 via-violet-500 to-purple-600 bg-clip-text text-transparent">
-                            {t('heroLine2')}
-                        </span>
-                    </h1>
-                    <span className="mt-4 animate-pulse rounded-full border border-white/50 bg-gradient-to-b from-indigo-400 via-violet-500 to-purple-600 px-10 py-4 font-display text-xl font-bold uppercase tracking-wide text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_10px_30px_rgba(99,102,241,0.5)]">
-                        {t('tapToStart')}
-                    </span>
-                </button>
+            {screen === 'called' && calledTicket && (
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                    <Sparkles className="h-16 w-16 animate-bounce text-indigo-500" strokeWidth={1.5} />
+                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
+                        {t('calledHeading', { number: calledTicket.number })}
+                    </p>
+                    {calledTicket.visitor_name && <p className="text-sm text-slate-600">{t('calledName', { name: calledTicket.visitor_name })}</p>}
+                    <h1 className="font-display text-4xl font-black uppercase text-slate-900">{t('calledInstruction')}</h1>
+                    <p className="font-display text-sm font-bold text-indigo-500">{t('calledCountdown', { seconds: countdown })}</p>
+                    <TouchButton onClick={handleImHere}>{t('imHereStartPlaying')}</TouchButton>
+                </div>
             )}
 
             {screen === 'choose' && (
@@ -148,7 +211,7 @@ function HubScreen() {
                 </div>
             )}
 
-            {screen !== 'idle' && screen !== 'choose' && (
+            {screen !== 'idle' && screen !== 'called' && screen !== 'choose' && (
                 <>
                     {screen === 'decision_lab' && <DecisionLabExperience visitorId={visitorId} onBack={goToChoose} />}
                     {screen === 'stopwatch' && <StopwatchExperience visitorId={visitorId} onBack={goToChoose} />}

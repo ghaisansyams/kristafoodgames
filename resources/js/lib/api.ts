@@ -54,6 +54,38 @@ export const MiniGameApi = {
         api().post('/api/mini-game-attempts', { game, won, visitor_id: visitorId, meta }),
 };
 
+export type QueueTicketStatus = 'waiting' | 'called' | 'serving' | 'done' | 'skipped';
+
+export interface QueueTicketSummary {
+    id: number;
+    number: number;
+    status: QueueTicketStatus;
+    visitor_name?: string | null;
+}
+
+export interface QueueState {
+    current: QueueTicketSummary | null;
+    waiting: { id: number; number: number }[];
+}
+
+export const QueueApi = {
+    state: () => api().get<QueueState>('/api/queue/state').then((r) => r.data),
+
+    ticket: (ticketId: number) => api().get<{ ticket: QueueTicketSummary }>(`/api/queue/tickets/${ticketId}`).then((r) => r.data.ticket),
+
+    advance: (completedTicketId?: number | null) =>
+        api()
+            .post<{ current: QueueTicketSummary | null }>('/api/queue/advance', { completed_ticket_id: completedTicketId ?? null })
+            .then((r) => r.data.current),
+
+    confirm: (ticketId: number) =>
+        api()
+            .post<{ visitor_id: number | null }>(`/api/queue/tickets/${ticketId}/confirm`)
+            .then((r) => r.data.visitor_id),
+
+    skip: (ticketId: number) => api().post(`/api/queue/tickets/${ticketId}/skip`),
+};
+
 export interface LeaderboardEntry {
     name: string;
     game: string;

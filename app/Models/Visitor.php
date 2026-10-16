@@ -34,4 +34,9 @@ class Visitor extends Model
     {
         return $this->hasMany(DecisionSession::class);
     }
+
+    public function queueTickets(): HasMany
+    {
+        return $this->hasMany(QueueTicket::class);
+    }
 }

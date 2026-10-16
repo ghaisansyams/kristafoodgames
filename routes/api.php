@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\DecisionSessionController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\MiniGameAttemptController;
+use App\Http\Controllers\Api\QueueController;
 use App\Http\Controllers\Api\VisitorController;
 use App\Http\Controllers\BoothSessionController;
 use Illuminate\Support\Facades\Route;
@@ -24,3 +25,9 @@ Route::post('/decision-sessions/{decisionSession}/decision', [DecisionSessionCon
 Route::post('/decision-sessions/{decisionSession}/handoff', [DecisionSessionController::class, 'handoff']);
 
 Route::post('/mini-game-attempts', [MiniGameAttemptController::class, 'store']);
+
+Route::get('/queue/state', [QueueController::class, 'state']);
+Route::get('/queue/tickets/{ticket}', [QueueController::class, 'show']);
+Route::post('/queue/advance', [QueueController::class, 'advance']);
+Route::post('/queue/tickets/{ticket}/confirm', [QueueController::class, 'confirm']);
+Route::post('/queue/tickets/{ticket}/skip', [QueueController::class, 'skip']);
