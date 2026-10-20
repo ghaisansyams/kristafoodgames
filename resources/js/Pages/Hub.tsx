@@ -285,7 +285,7 @@ function HubScreen() {
                         )}
                     </div>
 
-                    {!visitorId && stopwatchBest?.won && <LeaderboardOptIn onRecorded={recordStopwatchToLeaderboard} />}
+                    {!visitorId && stopwatchBest && <LeaderboardOptIn onRecorded={recordStopwatchToLeaderboard} />}
 
                     <TouchButton onClick={resetToIdle}>{t('imDoneNextGuest')}</TouchButton>
                 </div>
