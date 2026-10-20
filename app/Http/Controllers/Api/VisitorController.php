@@ -15,6 +15,8 @@ class VisitorController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'contact' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
+            'company' => ['nullable', 'string', 'max:255'],
+            'job_title' => ['nullable', 'string', 'max:255'],
         ]);
 
         $visitor = Visitor::create($data);

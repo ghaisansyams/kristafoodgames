@@ -126,6 +126,12 @@ const dict = {
         summaryEyebrow: 'Hasil Anda',
         summaryTitle: 'Terima Kasih Sudah Bermain!',
         summaryStopwatchBestLabel: 'Stop at 10.00 — Rekor Terbaik',
+        summaryRecordPrompt: 'Catat rekor ini ke leaderboard?',
+        summaryRecordSubtitle: 'Isi data singkat Anda agar rekor ini tampil di papan skor.',
+        summaryRecordButton: 'Catat ke Leaderboard',
+        summaryRecordSubmitting: 'Mencatat…',
+        summaryRecordSuccess: 'Rekor Anda sudah tercatat di leaderboard ✓',
+        summaryRecordError: 'Tidak dapat mencatat rekor Anda. Silakan coba lagi.',
     },
     en: {
         heroLine1: 'PLAY AND',
@@ -248,6 +254,12 @@ const dict = {
         summaryEyebrow: 'Your Results',
         summaryTitle: 'Great Playing With Us!',
         summaryStopwatchBestLabel: 'Stop at 10.00 — Best Try',
+        summaryRecordPrompt: 'Record this result on the leaderboard?',
+        summaryRecordSubtitle: 'Enter your details so this result can appear on the leaderboard.',
+        summaryRecordButton: 'Record to Leaderboard',
+        summaryRecordSubmitting: 'Recording…',
+        summaryRecordSuccess: 'Your result is now on the leaderboard ✓',
+        summaryRecordError: 'Could not record your result. Please try again.',
     },
     zh: {
         heroLine1: '畅玩游戏',
@@ -369,6 +381,12 @@ const dict = {
         summaryEyebrow: '您的成绩',
         summaryTitle: '感谢您的参与！',
         summaryStopwatchBestLabel: 'Stop at 10.00 — 最佳成绩',
+        summaryRecordPrompt: '将此成绩记录到排行榜？',
+        summaryRecordSubtitle: '填写您的信息，以便此成绩显示在排行榜上。',
+        summaryRecordButton: '记录到排行榜',
+        summaryRecordSubmitting: '记录中…',
+        summaryRecordSuccess: '您的成绩已记录到排行榜 ✓',
+        summaryRecordError: '无法记录您的成绩。请重试。',
     },
 } as const;
 

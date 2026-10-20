@@ -54,6 +54,25 @@ export const MiniGameApi = {
         api().post('/api/mini-game-attempts', { game, won, visitor_id: visitorId, meta }),
 };
 
+export interface VisitorInput {
+    name: string;
+    company: string;
+    job_title: string;
+    contact: string;
+    email: string;
+}
+
+export const VisitorApi = {
+    create: (data: VisitorInput): Promise<{ ok: true; visitorId: number } | { ok: false; message?: string }> =>
+        api()
+            .post<{ visitor: { id: number } }>('/api/visitors', data)
+            .then((r) => ({ ok: true as const, visitorId: r.data.visitor.id }))
+            .catch((error) => ({
+                ok: false as const,
+                message: error.response?.data?.message ?? 'Something went wrong. Please try again.',
+            })),
+};
+
 export type QueueTicketStatus = 'waiting' | 'called' | 'serving' | 'done' | 'skipped';
 
 export interface QueueTicketSummary {

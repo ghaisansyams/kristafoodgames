@@ -6,10 +6,11 @@ import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
 import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
 import SponsorLogos from '@/Components/Kiosk/SponsorLogos';
 import TouchButton from '@/Components/Kiosk/TouchButton';
+import LeaderboardOptIn from '@/Components/Kiosk/LeaderboardOptIn';
 import { DecisionLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { useIdleReset } from '@/lib/useIdleReset';
 import { LocaleProvider, useLocale } from '@/lib/i18n';
-import { QueueApi, type QueueTicketSummary } from '@/lib/api';
+import { MiniGameApi, QueueApi, type QueueTicketSummary } from '@/lib/api';
 import DecisionLabExperience from '@/Features/DecisionLab/DecisionLabExperience';
 import StopwatchExperience from '@/Features/Stopwatch/StopwatchExperience';
 import type { DecisionResult } from '@/types/content';
@@ -55,6 +56,19 @@ function HubScreen() {
     const recordStopwatchAttempt = useCallback((attempt: StopwatchBest) => {
         setStopwatchBest((prev) => (prev && Math.abs(prev.elapsed - 10) <= Math.abs(attempt.elapsed - 10) ? prev : attempt));
     }, []);
+
+    // A visitor who skipped identity capture ("Already a customer? Skip and play") plays with
+    // no visitor_id, so their attempt never reached the leaderboard. Opting in from the summary
+    // screen creates that identity after the fact and re-submits the best attempt under it.
+    const recordStopwatchToLeaderboard = useCallback(
+        async (newVisitorId: number) => {
+            if (!stopwatchBest) return;
+            await MiniGameApi.record('stopwatch', stopwatchBest.won, newVisitorId, {
+                stopped_at: Number(stopwatchBest.elapsed.toFixed(3)),
+            });
+        },
+        [stopwatchBest],
+    );
 
     const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
         { screen: 'decision_lab', title: t('gameDecisionLabTitle'), tagline: t('gameDecisionLabTagline'), Logo: DecisionLogo },
@@ -270,6 +284,8 @@ function HubScreen() {
                             </div>
                         )}
                     </div>
+
+                    {!visitorId && stopwatchBest?.won && <LeaderboardOptIn onRecorded={recordStopwatchToLeaderboard} />}
 
                     <TouchButton onClick={resetToIdle}>{t('imDoneNextGuest')}</TouchButton>
                 </div>
