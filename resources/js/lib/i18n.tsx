@@ -122,6 +122,10 @@ const dict = {
         calledInstruction: 'Silakan ke booth sekarang!',
         imHereStartPlaying: 'Saya Di Sini — Mulai Main',
         calledCountdown: '{seconds} detik tersisa',
+
+        summaryEyebrow: 'Hasil Anda',
+        summaryTitle: 'Terima Kasih Sudah Bermain!',
+        summaryStopwatchBestLabel: 'Stop at 10.00 — Rekor Terbaik',
     },
     en: {
         heroLine1: 'PLAY AND',
@@ -240,6 +244,10 @@ const dict = {
         calledInstruction: 'Please head to the booth now!',
         imHereStartPlaying: "I'm Here — Start Playing",
         calledCountdown: '{seconds}s remaining',
+
+        summaryEyebrow: 'Your Results',
+        summaryTitle: 'Great Playing With Us!',
+        summaryStopwatchBestLabel: 'Stop at 10.00 — Best Try',
     },
     zh: {
         heroLine1: '畅玩游戏',
@@ -357,6 +365,10 @@ const dict = {
         calledInstruction: '请立即前往展台！',
         imHereStartPlaying: '我在这里——开始游戏',
         calledCountdown: '剩余 {seconds} 秒',
+
+        summaryEyebrow: '您的成绩',
+        summaryTitle: '感谢您的参与！',
+        summaryStopwatchBestLabel: 'Stop at 10.00 — 最佳成绩',
     },
 } as const;
 

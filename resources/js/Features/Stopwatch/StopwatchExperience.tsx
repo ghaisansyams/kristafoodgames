@@ -22,10 +22,12 @@ export default function StopwatchExperience({
     visitorId,
     onBack,
     onRunningChange,
+    onResult,
 }: {
     visitorId: number | null;
     onBack: () => void;
     onRunningChange?: (running: boolean) => void;
+    onResult?: (attempt: { elapsed: number; won: boolean }) => void;
 }) {
     const { t } = useLocale();
     const [phase, setPhase] = useState<Phase>('idle');
@@ -88,6 +90,7 @@ export default function StopwatchExperience({
 
         const won = Math.abs(value - TARGET_SECONDS) <= WIN_TOLERANCE;
         MiniGameApi.record('stopwatch', won, visitorId, { stopped_at: Number(value.toFixed(3)) });
+        onResult?.({ elapsed: value, won });
     }
 
     function playAgain() {

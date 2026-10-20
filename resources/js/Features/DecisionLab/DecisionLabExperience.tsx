@@ -41,9 +41,11 @@ interface PersistedState {
 export default function DecisionLabExperience({
     visitorId,
     onBack,
+    onResult,
 }: {
     visitorId: number | null;
     onBack: () => void;
+    onResult?: (result: DecisionResult) => void;
 }) {
     const { t } = useLocale();
     const [stage, setStage] = useState<Stage>('loading');
@@ -160,6 +162,7 @@ export default function DecisionLabExperience({
             const { result: decisionResult } = await DecisionSessionApi.decide(sessionId, optionId);
             setResult(decisionResult);
             setStage('result');
+            onResult?.(decisionResult);
         } catch {
             setError(t('unableToComputeResult'));
         } finally {
@@ -194,7 +197,7 @@ export default function DecisionLabExperience({
                 </p>
             )}
 
-            {stage !== 'result' && <CountdownBar totalSeconds={180} dangerSeconds={25} />}
+            {stage !== 'start' && stage !== 'result' && <CountdownBar totalSeconds={180} dangerSeconds={25} />}
 
             {stage === 'start' && (
                 <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/50 p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">

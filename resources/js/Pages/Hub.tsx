@@ -12,8 +12,11 @@ import { LocaleProvider, useLocale } from '@/lib/i18n';
 import { QueueApi, type QueueTicketSummary } from '@/lib/api';
 import DecisionLabExperience from '@/Features/DecisionLab/DecisionLabExperience';
 import StopwatchExperience from '@/Features/Stopwatch/StopwatchExperience';
+import type { DecisionResult } from '@/types/content';
 
-type Screen = 'idle' | 'called' | 'choose' | 'decision_lab' | 'stopwatch';
+type Screen = 'idle' | 'called' | 'choose' | 'decision_lab' | 'stopwatch' | 'summary';
+
+type StopwatchBest = { elapsed: number; won: boolean };
 
 // How long a called visitor has to walk over and tap "I'm Here" before the booth gives up on
 // them and calls the next number — long enough to cross a busy exhibition hall, short enough
@@ -44,6 +47,15 @@ function HubScreen() {
     const [stopwatchRunning, setStopwatchRunning] = useState(false);
     const currentTicketIdRef = useRef<number | null>(null);
 
+    // Best result per game played this visit, surfaced on the end-of-visit summary screen
+    // instead of a mid-game popup — only the games actually played show up there.
+    const [stopwatchBest, setStopwatchBest] = useState<StopwatchBest | null>(null);
+    const [decisionLabResult, setDecisionLabResult] = useState<DecisionResult | null>(null);
+
+    const recordStopwatchAttempt = useCallback((attempt: StopwatchBest) => {
+        setStopwatchBest((prev) => (prev && Math.abs(prev.elapsed - 10) <= Math.abs(attempt.elapsed - 10) ? prev : attempt));
+    }, []);
+
     const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
         { screen: 'decision_lab', title: t('gameDecisionLabTitle'), tagline: t('gameDecisionLabTagline'), Logo: DecisionLogo },
         { screen: 'stopwatch', title: t('gameStopwatchTitle'), tagline: t('gameStopwatchTagline'), Logo: StopwatchLogo },
@@ -59,6 +71,8 @@ function HubScreen() {
         currentTicketIdRef.current = null;
         setVisitorId(null);
         setCalledTicket(null);
+        setStopwatchBest(null);
+        setDecisionLabResult(null);
         setScreen('idle');
 
         QueueApi.advance(finishedTicketId)
@@ -70,6 +84,17 @@ function HubScreen() {
             })
             .catch(() => {});
     }, []);
+
+    // "I'm Done" shows the results summary first (if any game was played) instead of
+    // resetting straight back to idle — the queue only advances once the visitor
+    // confirms they're finished from that screen.
+    const finishVisit = useCallback(() => {
+        if (stopwatchBest || decisionLabResult) {
+            setScreen('summary');
+        } else {
+            resetToIdle();
+        }
+    }, [stopwatchBest, decisionLabResult, resetToIdle]);
 
     // An abandoned session (visitor walked off mid-game) shouldn't block the booth for the
     // next person — bounce back to idle (and advance the queue) after a stretch of no touch
@@ -206,17 +231,62 @@ function HubScreen() {
                             <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
                         ))}
                     </div>
-                    <button onClick={resetToIdle} className="mt-2 text-sm text-slate-500 underline">
+                    <button onClick={finishVisit} className="mt-2 text-sm text-slate-500 underline">
                         {t('imDoneNextGuest')}
                     </button>
                 </div>
             )}
 
-            {screen !== 'idle' && screen !== 'called' && screen !== 'choose' && (
+            {screen === 'summary' && (
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
+                        {t('summaryEyebrow')}
+                    </p>
+                    <h1 className="font-display text-3xl font-black uppercase text-slate-900">{t('summaryTitle')}</h1>
+
+                    <div className="flex w-full max-w-md flex-col gap-4">
+                        {decisionLabResult && (
+                            <div className="rounded-3xl border border-white/70 bg-white/50 p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{t('gameDecisionLabTitle')}</p>
+                                <p className="mt-1 font-display text-4xl font-black text-indigo-600">
+                                    {decisionLabResult.fit_score}
+                                    <span className="text-lg text-slate-500"> {t('outOf100')}</span>
+                                </p>
+                                <p className="text-sm text-slate-600">{decisionLabResult.solution_label}</p>
+                            </div>
+                        )}
+
+                        {stopwatchBest && (
+                            <div className="rounded-3xl border border-white/70 bg-white/50 p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                                    {t('summaryStopwatchBestLabel')}
+                                </p>
+                                <p className="mt-1 font-display text-4xl font-black text-indigo-600">{stopwatchBest.elapsed.toFixed(2)}s</p>
+                                <p className="text-sm text-slate-600">
+                                    {stopwatchBest.won
+                                        ? t('perfectTiming')
+                                        : `${Math.abs(stopwatchBest.elapsed - 10).toFixed(2)}s ${t('offTarget')}`}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <TouchButton onClick={resetToIdle}>{t('imDoneNextGuest')}</TouchButton>
+                </div>
+            )}
+
+            {screen !== 'idle' && screen !== 'called' && screen !== 'choose' && screen !== 'summary' && (
                 <>
-                    {screen === 'decision_lab' && <DecisionLabExperience visitorId={visitorId} onBack={goToChoose} />}
+                    {screen === 'decision_lab' && (
+                        <DecisionLabExperience visitorId={visitorId} onBack={goToChoose} onResult={setDecisionLabResult} />
+                    )}
                     {screen === 'stopwatch' && (
-                        <StopwatchExperience visitorId={visitorId} onBack={goToChoose} onRunningChange={setStopwatchRunning} />
+                        <StopwatchExperience
+                            visitorId={visitorId}
+                            onBack={goToChoose}
+                            onRunningChange={setStopwatchRunning}
+                            onResult={recordStopwatchAttempt}
+                        />
                     )}
                 </>
             )}
