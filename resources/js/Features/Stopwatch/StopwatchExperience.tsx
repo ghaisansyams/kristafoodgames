@@ -16,6 +16,12 @@ const WIN_TOLERANCE = 0.15;
 // exactly 10.00 one pause at a time.
 const LOCK_IN_HOLD_MS = 1000;
 
+// Local-only bridge for the booth's physical button (see hardware/arduino-bridge) — a small
+// Python script on the same laptop reads the Arduino over serial and relays each press here.
+// Never touches the deployed site; if the bridge isn't running, the connection just fails
+// quietly and the touchscreen/Space-key paths work exactly as before.
+const HARDWARE_BRIDGE_URL = 'ws://localhost:8765';
+
 type Phase = 'idle' | 'running' | 'paused' | 'result';
 
 export default function StopwatchExperience({
@@ -38,6 +44,7 @@ export default function StopwatchExperience({
     const frameRef = useRef<number>();
     const keyHoldTimeoutRef = useRef<number | null>(null);
     const pointerHoldTimeoutRef = useRef<number | null>(null);
+    const hardwareSocketRef = useRef<WebSocket | null>(null);
 
     // Tells the booth background to freeze the hologram while the clock is actually running —
     // a moving 3D display behind a precision-timing game is exactly the kind of distraction
@@ -172,6 +179,35 @@ export default function StopwatchExperience({
                 window.clearTimeout(keyHoldTimeoutRef.current);
                 keyHoldTimeoutRef.current = null;
             }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [phase, pausedElapsed]);
+
+    // Opens the connection to the physical-button bridge once per mount. A failed connection
+    // (bridge not running) is silent — the game is fully playable without it.
+    useEffect(() => {
+        const ws = new WebSocket(HARDWARE_BRIDGE_URL);
+        ws.onerror = () => {};
+        hardwareSocketRef.current = ws;
+        return () => {
+            ws.close();
+            hardwareSocketRef.current = null;
+        };
+    }, []);
+
+    // Each physical-button press arrives as a single discrete event (no down/up pair, no hold
+    // duration) — so unlike the touchscreen's tap-to-pause button, it acts like a real
+    // stopwatch's single button: first press starts the clock, the next press stops and locks
+    // in the result immediately. Reassigned on every phase change so it always acts on current
+    // state instead of a stale snapshot.
+    useEffect(() => {
+        const ws = hardwareSocketRef.current;
+        if (!ws) return;
+        ws.onmessage = () => {
+            if (phase === 'idle') startFresh();
+            else if (phase === 'running') finalize(currentElapsedNow());
+            else if (phase === 'paused') finalize(pausedElapsed);
+            else if (phase === 'result') playAgain();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase, pausedElapsed]);
