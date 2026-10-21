@@ -8,21 +8,13 @@ import { useLocale } from '@/lib/i18n';
 const TARGET_SECONDS = 10;
 const WIN_TOLERANCE = 0.15;
 
-// Holding the button/Space for this long auto-commits whatever time is showing as the final
-// result — it fires on its own, mid-hold, with no release needed (the booth's physical button
-// will work the same way: hold it down, and at the 1-second mark it locks in on its own).
-// Releasing before this mark is just a short tap, which toggles pause/resume instead. Without
-// this, a player could tap Space once a second, read the frozen number, and creep toward
-// exactly 10.00 one pause at a time.
-const LOCK_IN_HOLD_MS = 1000;
-
 // Local-only bridge for the booth's physical button (see hardware/arduino-bridge) — a small
 // Python script on the same laptop reads the Arduino over serial and relays each press here.
 // Never touches the deployed site; if the bridge isn't running, the connection just fails
 // quietly and the touchscreen/Space-key paths work exactly as before.
 const HARDWARE_BRIDGE_URL = 'ws://localhost:8765';
 
-type Phase = 'idle' | 'running' | 'paused' | 'result';
+type Phase = 'idle' | 'running' | 'result';
 
 export default function StopwatchExperience({
     visitorId,
@@ -38,12 +30,9 @@ export default function StopwatchExperience({
     const { t } = useLocale();
     const [phase, setPhase] = useState<Phase>('idle');
     const [elapsed, setElapsed] = useState(0);
-    const [pausedElapsed, setPausedElapsed] = useState(0);
     const [finalElapsed, setFinalElapsed] = useState<number | null>(null);
     const startRef = useRef(0);
     const frameRef = useRef<number>();
-    const keyHoldTimeoutRef = useRef<number | null>(null);
-    const pointerHoldTimeoutRef = useRef<number | null>(null);
     const hardwareSocketRef = useRef<WebSocket | null>(null);
 
     // Tells the booth background to freeze the hologram while the clock is actually running —
@@ -70,24 +59,9 @@ export default function StopwatchExperience({
         };
     }, [phase]);
 
-    function currentElapsedNow(): number {
-        return phase === 'running' ? (performance.now() - startRef.current) / 1000 : pausedElapsed;
-    }
-
     function startFresh() {
         startRef.current = performance.now();
         setElapsed(0);
-        setPhase('running');
-    }
-
-    function pauseAt(value: number) {
-        setPausedElapsed(value);
-        setElapsed(value);
-        setPhase('paused');
-    }
-
-    function resumeFrom(value: number) {
-        startRef.current = performance.now() - value * 1000;
         setPhase('running');
     }
 
@@ -100,88 +74,38 @@ export default function StopwatchExperience({
         onResult?.({ elapsed: value, won });
     }
 
+    function stopNow() {
+        finalize((performance.now() - startRef.current) / 1000);
+    }
+
     function playAgain() {
         setFinalElapsed(null);
         setElapsed(0);
-        setPausedElapsed(0);
         setPhase('idle');
     }
 
-    // Arms a 1-second auto-commit timer for the press that just started, snapshotting the
-    // phase/paused value as of press time — nothing else changes `phase` mid-hold, so this
-    // snapshot stays valid for the life of the timer.
-    function armLockIn(timeoutRef: React.MutableRefObject<number | null>) {
-        const phaseAtPress = phase;
-        const pausedAtPress = pausedElapsed;
-        timeoutRef.current = window.setTimeout(() => {
-            timeoutRef.current = null;
-            if (phaseAtPress === 'running') {
-                finalize(currentElapsedNow());
-            } else if (phaseAtPress === 'paused') {
-                finalize(pausedAtPress);
-            }
-        }, LOCK_IN_HOLD_MS);
+    // One button, two states — press to start, press again to stop and lock in the result
+    // immediately, same as a real stopwatch. Matches the booth's physical button (which only
+    // ever sends a single discrete "pressed" signal, with no separate down/up or hold info),
+    // and the on-screen button and Space key mirror that exact behavior for consistency.
+    function handlePress() {
+        if (phase === 'idle') startFresh();
+        else if (phase === 'running') stopNow();
+        else if (phase === 'result') playAgain();
     }
 
-    // Released before the lock-in timer fired — that's a short tap: toggle pause/resume.
-    function disarmAndShortTap(timeoutRef: React.MutableRefObject<number | null>) {
-        if (timeoutRef.current === null) return; // already auto-committed, nothing left to do
-        window.clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-        if (phase === 'running') {
-            pauseAt(currentElapsedNow());
-        } else if (phase === 'paused') {
-            resumeFrom(pausedElapsed);
-        }
-    }
-
-    function handlePressStart() {
-        if (pointerHoldTimeoutRef.current !== null) return;
-        armLockIn(pointerHoldTimeoutRef);
-    }
-
-    function handlePressEnd() {
-        disarmAndShortTap(pointerHoldTimeoutRef);
-    }
-
-    // Space mirrors the on-screen button's tap-vs-hold behavior — handy on a keyboard-equipped
-    // setup (or for testing the booth's forthcoming physical button), on top of touching the
-    // button. Re-subscribes on every phase change so the listener always checks current state
-    // rather than a stale one.
+    // Space mirrors the on-screen/physical button, handy on a keyboard-equipped setup or for
+    // testing without the hardware attached.
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (e.code !== 'Space' || e.repeat) return;
             e.preventDefault();
-            if (phase === 'idle') {
-                startFresh();
-                return;
-            }
-            if (phase === 'result') {
-                // Resets to 00.00 and waits for a separate press to actually start — jumping
-                // straight into a running clock caught players off guard.
-                playAgain();
-                return;
-            }
-            if (keyHoldTimeoutRef.current !== null) return;
-            armLockIn(keyHoldTimeoutRef);
-        }
-        function handleKeyUp(e: KeyboardEvent) {
-            if (e.code !== 'Space') return;
-            e.preventDefault();
-            disarmAndShortTap(keyHoldTimeoutRef);
+            handlePress();
         }
         window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-            if (keyHoldTimeoutRef.current !== null) {
-                window.clearTimeout(keyHoldTimeoutRef.current);
-                keyHoldTimeoutRef.current = null;
-            }
-        };
+        return () => window.removeEventListener('keydown', handleKeyDown);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [phase, pausedElapsed]);
+    }, [phase]);
 
     // Opens the connection to the physical-button bridge once per mount. A failed connection
     // (bridge not running) is silent — the game is fully playable without it.
@@ -195,22 +119,20 @@ export default function StopwatchExperience({
         };
     }, []);
 
-    // Each physical-button press arrives as a single discrete event (no down/up pair, no hold
-    // duration) — so unlike the touchscreen's tap-to-pause button, it acts like a real
-    // stopwatch's single button: first press starts the clock, the next press stops and locks
-    // in the result immediately. Reassigned on every phase change so it always acts on current
-    // state instead of a stale snapshot.
+    // Reassigned on every phase change so it always acts on current state instead of a stale
+    // snapshot.
     useEffect(() => {
         const ws = hardwareSocketRef.current;
         if (!ws) return;
         ws.onmessage = () => {
-            if (phase === 'idle') startFresh();
-            else if (phase === 'running') finalize(currentElapsedNow());
-            else if (phase === 'paused') finalize(pausedElapsed);
-            else if (phase === 'result') playAgain();
+            // The booth's idle-reset timer only listens for real pointer/touch/keyboard
+            // events, so a visitor playing purely via the physical button would otherwise
+            // look inactive and get bounced back to the attract screen mid-game.
+            window.dispatchEvent(new Event('keydown'));
+            handlePress();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [phase, pausedElapsed]);
+    }, [phase]);
 
     const won = finalElapsed !== null && Math.abs(finalElapsed - TARGET_SECONDS) <= WIN_TOLERANCE;
     const diff = finalElapsed !== null ? Math.abs(finalElapsed - TARGET_SECONDS) : null;
@@ -237,12 +159,6 @@ export default function StopwatchExperience({
                 <span className="ml-1 text-2xl text-slate-500">s</span>
             </div>
 
-            {(phase === 'running' || phase === 'paused') && (
-                <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-indigo-500">
-                    {t('tapPauseHoldStop')}
-                </p>
-            )}
-
             {phase === 'result' && (
                 <p className="mb-6 text-center text-slate-600">
                     {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} —{' '}
@@ -250,25 +166,15 @@ export default function StopwatchExperience({
                 </p>
             )}
 
-            {phase === 'idle' && <TouchButton onClick={startFresh}>{t('start')}</TouchButton>}
-            {(phase === 'running' || phase === 'paused') && (
-                <TouchButton
-                    variant="secondary"
-                    onPointerDown={handlePressStart}
-                    onPointerUp={handlePressEnd}
-                    onPointerLeave={() => {
-                        if (pointerHoldTimeoutRef.current !== null) {
-                            window.clearTimeout(pointerHoldTimeoutRef.current);
-                            pointerHoldTimeoutRef.current = null;
-                        }
-                    }}
-                >
-                    {phase === 'running' ? t('pause') : t('resume')}
+            {phase === 'idle' && <TouchButton onClick={handlePress}>{t('start')}</TouchButton>}
+            {phase === 'running' && (
+                <TouchButton variant="secondary" onClick={handlePress}>
+                    {t('stop')}
                 </TouchButton>
             )}
             {phase === 'result' && (
                 <div className="flex flex-col items-center gap-3">
-                    <TouchButton variant={won ? 'secondary' : 'ghost'} onClick={playAgain}>
+                    <TouchButton variant={won ? 'secondary' : 'ghost'} onClick={handlePress}>
                         {t('playAgain')}
                     </TouchButton>
                     <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">{t('pressSpaceToPlayAgain')}</p>
