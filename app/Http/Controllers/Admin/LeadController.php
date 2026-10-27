@@ -24,7 +24,6 @@ class LeadController extends Controller
                 'company' => $visitor->company,
                 'job_title' => $visitor->job_title,
                 'contact' => $visitor->contact,
-                'industry' => $visitor->industry,
                 'email_sent_at' => $visitor->email_sent_at,
                 'handoff_requested_at' => $visitor->handoff_requested_at,
                 'created_at' => $visitor->created_at,
@@ -44,7 +43,7 @@ class LeadController extends Controller
     {
         $visitors = Visitor::with(['decisionSessions.businessCase:id,title'])->latest()->get();
 
-        $rows = ['Name,Company,Job Title,Contact,Industry,Best Fit Score,Profile,Email Sent,Talk Requested,Captured At'];
+        $rows = ['Name,Company,Job Title,Contact,Best Fit Score,Profile,Email Sent,Talk Requested,Captured At'];
         foreach ($visitors as $visitor) {
             $bestSession = $visitor->decisionSessions->whereNotNull('completed_at')->sortByDesc('fit_score')->first();
             $rows[] = implode(',', array_map(
@@ -54,7 +53,6 @@ class LeadController extends Controller
                     $visitor->company,
                     $visitor->job_title,
                     $visitor->contact,
-                    $visitor->industry,
                     $bestSession?->fit_score ?? '',
                     $bestSession?->profile ?? '',
                     $visitor->email_sent_at ?? '',

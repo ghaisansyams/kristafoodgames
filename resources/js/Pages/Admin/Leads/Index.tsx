@@ -14,7 +14,6 @@ interface LeadRow {
     company: string;
     job_title: string;
     contact: string;
-    industry: string;
     email_sent_at: string | null;
     handoff_requested_at: string | null;
     created_at: string;
@@ -44,7 +43,6 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                         <tr>
                             <th className="px-5 py-3">Visitor</th>
                             <th className="px-5 py-3">Contact</th>
-                            <th className="px-5 py-3">Industry</th>
                             <th className="px-5 py-3">Decision Lab</th>
                             <th className="px-5 py-3">Follow-up</th>
                             <th className="px-5 py-3">Captured</th>
@@ -58,7 +56,6 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                                     <p className="text-slate-500">{lead.company} · {lead.job_title}</p>
                                 </td>
                                 <td className="px-5 py-3 text-slate-600">{lead.contact}</td>
-                                <td className="px-5 py-3 text-slate-600">{lead.industry}</td>
                                 <td className="px-5 py-3">
                                     {lead.decision_results.length === 0 && <span className="text-slate-400">—</span>}
                                     {lead.decision_results.map((r, i) => (
@@ -86,7 +83,7 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                         ))}
                         {leads.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="px-5 py-8 text-center text-slate-400">
+                                <td colSpan={5} className="px-5 py-8 text-center text-slate-400">
                                     No leads captured yet.
                                 </td>
                             </tr>
