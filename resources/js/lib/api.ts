@@ -1,4 +1,4 @@
-import type { DecisionLabContent, DecisionResult, DecisionSession, PackagingOptionChoice } from '@/types/content';
+import type { DecisionLabContent, DecisionSession, RecommendationResponse, Role } from '@/types/content';
 
 const api = () => window.axios;
 
@@ -21,22 +21,14 @@ export const DecisionSessionApi = {
             .post<{ session: DecisionSession }>('/api/decision-sessions', { visitor_id: visitorId })
             .then((r) => r.data.session),
 
-    update: (sessionId: number, data: Partial<DecisionSession>) =>
+    update: (sessionId: number, role: Role, answers: Record<string, unknown>) =>
         api()
-            .patch<{ session: DecisionSession }>(`/api/decision-sessions/${sessionId}`, data)
+            .patch<{ session: DecisionSession }>(`/api/decision-sessions/${sessionId}`, { role, answers })
             .then((r) => r.data.session),
 
-    options: (sessionId: number) =>
+    recommend: (sessionId: number, role: Role, answers: Record<string, unknown>) =>
         api()
-            .get<{ options: PackagingOptionChoice[] }>(`/api/decision-sessions/${sessionId}/options`)
-            .then((r) => r.data.options),
-
-    decide: (sessionId: number, packagingOptionId: number) =>
-        api()
-            .post<{ session: DecisionSession; result: DecisionResult }>(
-                `/api/decision-sessions/${sessionId}/decision`,
-                { packaging_option_id: packagingOptionId },
-            )
+            .post<RecommendationResponse>(`/api/decision-sessions/${sessionId}/recommendation`, { role, answers })
             .then((r) => r.data),
 
     handoff: (sessionId: number, type: 'email' | 'expert', email?: string): Promise<{ ok: boolean; message?: string }> =>

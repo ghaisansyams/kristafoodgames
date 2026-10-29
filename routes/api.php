@@ -20,8 +20,7 @@ Route::post('/visitors', [VisitorController::class, 'store']);
 
 Route::post('/decision-sessions', [DecisionSessionController::class, 'store']);
 Route::patch('/decision-sessions/{decisionSession}', [DecisionSessionController::class, 'update']);
-Route::get('/decision-sessions/{decisionSession}/options', [DecisionSessionController::class, 'options']);
-Route::post('/decision-sessions/{decisionSession}/decision', [DecisionSessionController::class, 'decide']);
+Route::post('/decision-sessions/{decisionSession}/recommendation', [DecisionSessionController::class, 'recommend']);
 Route::post('/decision-sessions/{decisionSession}/handoff', [DecisionSessionController::class, 'handoff']);
 
 Route::post('/mini-game-attempts', [MiniGameAttemptController::class, 'store']);

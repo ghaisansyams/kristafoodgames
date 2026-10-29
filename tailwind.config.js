@@ -9,14 +9,13 @@ export default {
         './resources/js/**/*.tsx',
     ],
 
-    // Both fonts are self-hosted (public/fonts, see resources/css/app.css) rather than pulled
-    // from a Google Fonts CDN, so they still work with no internet at the booth.
-    // `sans` (body) is Fredoka; `display` (headings, timers) is Garet Heavy.
+    // `display` is self-hosted (public/fonts/orbitron.woff2, see resources/css/app.css) rather
+    // than pulled from a Google Fonts CDN, so it still works with no internet at the booth.
+    // Body text keeps Tailwind's default system-font `font-sans` for readability.
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Fredoka', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                display: ['Garet', 'Fredoka', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                display: ['Orbitron', 'ui-sans-serif', 'system-ui', 'sans-serif'],
             },
         },
     },

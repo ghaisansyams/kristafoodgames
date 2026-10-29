@@ -1,46 +1,44 @@
-export type PrioritySlug =
-    | 'protection'
-    | 'shelf_life'
-    | 'cost'
-    | 'sustainability'
-    | 'convenience'
-    | 'presentation';
+export type Role = 'brand_owner' | 'converter';
 
-export interface BusinessCase {
-    id: number;
-    slug: string;
-    title: string;
-    description: string;
-    icon: string;
+export interface JourneyOption {
+    label: string;
+    icon?: string;
+    /** Shows a free-text field once this option is picked. */
+    text?: boolean;
+    /** Picking this option clears every other pick in its step. */
+    exclusive?: boolean;
 }
 
-export interface Market {
-    id: number;
-    slug: string;
-    title: string;
-    description: string;
+export interface JourneyStep {
+    key: string;
+    mode: 'single' | 'multi';
+    max?: number;
+    /** Fixed option slugs, or... */
+    options?: string[];
+    /** ...options that depend on the answer to an earlier step. */
+    depends_on?: string;
+    options_by?: Record<string, string[]>;
+    /** Builds the option list from earlier answers instead (e.g. the "Other" category). */
+    derive?: {
+        for: string[];
+        base: string[];
+        rules: Record<string, Record<string, string[]>>;
+    };
 }
 
-export interface Priority {
-    id: number;
-    slug: PrioritySlug;
-    title: string;
-    description: string;
-    icon: string;
+export interface Journey {
+    steps: JourneyStep[];
+    requirements: string[];
 }
 
 export interface DecisionLabContent {
-    business_cases: BusinessCase[];
-    markets: Market[];
-    priorities: Priority[];
+    roles: Role[];
+    options: Record<string, JourneyOption>;
+    journeys: Record<Role, Journey>;
 }
 
-export interface PackagingOptionChoice {
-    id: number;
-    label: string;
-    description: string;
-    scores: Record<PrioritySlug, number>;
-}
+/** Answers keyed by step key: one slug for single steps, a list for multi steps. */
+export type JourneyAnswers = Record<string, string | string[] | null>;
 
 export interface Visitor {
     id: number;
@@ -55,18 +53,19 @@ export interface Visitor {
 export interface DecisionSession {
     id: number;
     visitor_id: number | null;
-    business_case_id: number | null;
-    market_slug: string | null;
-    priority_1_slug: string | null;
-    priority_2_slug: string | null;
-    priority_3_slug: string | null;
-    packaging_option_id: number | null;
-    weighted_score: number | null;
+    role: Role | null;
+    recommended_product: string | null;
     fit_score: number | null;
     profile: string | null;
-    strength: string | null;
-    trade_off: string | null;
     completed_at: string | null;
+}
+
+export interface RecommendedProduct {
+    slug: string;
+    name: string;
+    brand: 'foopak' | 'enza';
+    description: string;
+    icon: string;
 }
 
 export interface DecisionResult {
@@ -76,5 +75,11 @@ export interface DecisionResult {
     strength: string;
     trade_off: string;
     solution_label: string;
+    role: Role;
+    product: RecommendedProduct;
+    reasons: string[];
+    gaps: string[];
+    alternatives: (RecommendedProduct & { match: number })[];
 }
 
+export type RecommendationResponse = { status: 'needs_more_info' } | { status: 'complete'; result: DecisionResult };

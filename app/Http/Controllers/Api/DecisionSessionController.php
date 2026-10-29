@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DecisionSession;
-use App\Models\PackagingOption;
-use App\Services\PackagingScoringService;
+use App\Services\DecisionLabCatalog;
+use App\Services\PackagingRecommendationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DecisionSessionController extends Controller
 {
-    public function __construct(private readonly PackagingScoringService $scoringService) {}
+    public function __construct(
+        private readonly DecisionLabCatalog $catalog,
+        private readonly PackagingRecommendationService $recommendations,
+    ) {}
 
     public function store(Request $request): JsonResponse
     {
@@ -24,71 +27,48 @@ class DecisionSessionController extends Controller
         return response()->json(['session' => $session], 201);
     }
 
+    /**
+     * Saves progress so a visitor who walks away mid-journey still leaves their role and
+     * answers so far with the booth team.
+     */
     public function update(Request $request, DecisionSession $decisionSession): JsonResponse
     {
-        $data = $request->validate([
-            'business_case_id' => ['sometimes', 'exists:business_cases,id'],
-            'market_slug' => ['sometimes', 'exists:markets,slug'],
-            'priority_1_slug' => ['sometimes', 'exists:priorities,slug'],
-            'priority_2_slug' => ['sometimes', 'exists:priorities,slug', 'different:priority_1_slug'],
-            'priority_3_slug' => ['sometimes', 'exists:priorities,slug', 'different:priority_1_slug', 'different:priority_2_slug'],
-        ]);
+        $data = $this->validatedJourney($request);
 
-        $decisionSession->update($data);
+        $decisionSession->update([
+            'role' => $data['role'],
+            'answers' => $this->catalog->sanitize($data['role'], $data['answers']),
+        ]);
 
         return response()->json(['session' => $decisionSession->fresh()]);
     }
 
     /**
-     * Three packaging options for the session's business case, filtered by market when the
-     * option is restricted to specific markets.
+     * Ranks the products for the visitor's answers. When the answers cannot yet separate the top
+     * candidates the optional "specific requirements" step is asked for first; once it is answered
+     * (even with "Not sure yet") the session always completes.
      */
-    public function options(DecisionSession $decisionSession): JsonResponse
+    public function recommend(Request $request, DecisionSession $decisionSession): JsonResponse
     {
-        $options = PackagingOption::query()
-            ->where('business_case_id', $decisionSession->business_case_id)
-            ->orderBy('sort_order')
-            ->get(['id', 'label', 'description', 'applicable_markets', 'scores']);
+        $data = $this->validatedJourney($request);
+        $answers = $this->catalog->sanitize($data['role'], $data['answers']);
 
-        $marketFiltered = $options->filter(function (PackagingOption $option) use ($decisionSession) {
-            return empty($option->applicable_markets)
-                || in_array($decisionSession->market_slug, $option->applicable_markets, true);
-        });
+        abort_if(empty(array_filter(array_diff_key($answers, ['notes' => 1]))), 422, 'Answer at least the first step before asking for a recommendation.');
 
-        $selected = $marketFiltered->count() >= 3 ? $marketFiltered : $options;
+        $ranking = $this->recommendations->rank($data['role'], $answers);
 
-        return response()->json([
-            'options' => $selected->take(3)->values()->map(fn (PackagingOption $option) => [
-                'id' => $option->id,
-                'label' => $option->label,
-                'description' => $option->description,
-                // Only the priority-relevant scores are shown as qualitative dots on stage 6;
-                // raw weighted totals stay server-side until the result screen.
-                'scores' => $option->scores,
-            ]),
-        ]);
-    }
+        if ($this->recommendations->needsMoreInformation($answers, $ranking)) {
+            $decisionSession->update(['role' => $data['role'], 'answers' => $answers]);
 
-    public function decide(Request $request, DecisionSession $decisionSession): JsonResponse
-    {
-        $data = $request->validate([
-            'packaging_option_id' => ['required', 'exists:packaging_options,id'],
-        ]);
+            return response()->json(['status' => 'needs_more_info']);
+        }
 
-        $priorities = array_filter([
-            $decisionSession->priority_1_slug,
-            $decisionSession->priority_2_slug,
-            $decisionSession->priority_3_slug,
-        ]);
-
-        abort_if(count($priorities) !== 3, 422, 'Top 3 priorities must be set before deciding.');
-
-        $option = PackagingOption::findOrFail($data['packaging_option_id']);
-
-        $result = $this->scoringService->score($option, array_values($priorities));
+        $result = $this->recommendations->result($data['role'], $answers, $ranking);
 
         $decisionSession->update([
-            'packaging_option_id' => $option->id,
+            'role' => $data['role'],
+            'answers' => $answers,
+            'recommended_product' => $result['solution_label'],
             'weighted_score' => $result['weighted_score'],
             'fit_score' => $result['fit_score'],
             'profile' => $result['profile'],
@@ -97,12 +77,17 @@ class DecisionSessionController extends Controller
             'completed_at' => now(),
         ]);
 
-        return response()->json([
-            'session' => $decisionSession->fresh(),
-            'result' => [
-                ...$result,
-                'solution_label' => $option->label,
-            ],
+        return response()->json(['status' => 'complete', 'result' => $result]);
+    }
+
+    /**
+     * @return array{role: string, answers: array<string, mixed>}
+     */
+    private function validatedJourney(Request $request): array
+    {
+        return $request->validate([
+            'role' => ['required', 'in:'.implode(',', $this->catalog->roles())],
+            'answers' => ['required', 'array'],
         ]);
     }
 

@@ -28,7 +28,7 @@ class LeadController extends Controller
                 'handoff_requested_at' => $visitor->handoff_requested_at,
                 'created_at' => $visitor->created_at,
                 'decision_results' => $visitor->decisionSessions->map(fn ($s) => [
-                    'business_case' => $s->businessCase?->title,
+                    'business_case' => $s->businessCase?->title ?? $s->recommended_product,
                     'fit_score' => $s->fit_score,
                     'profile' => $s->profile,
                 ]),

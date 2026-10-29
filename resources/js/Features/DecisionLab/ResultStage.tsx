@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import TouchButton from '@/Components/Kiosk/TouchButton';
+import Icon from '@/lib/icons';
 import { useLocale } from '@/lib/i18n';
 import type { DecisionResult } from '@/types/content';
 
@@ -40,33 +41,53 @@ export default function ResultStage({
     return (
         <div className="mx-auto w-full max-w-4xl">
             <p className="mb-2 text-center font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">
-                {t('yourDecisionEyebrow')}
+                {t('resultEyebrow')}
             </p>
-            <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-slate-900">{t('resultTitle')}</h2>
+            <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-slate-900">{t('resultProductTitle')}</h2>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="flex flex-col items-center justify-center rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
-                    <span className="text-sm uppercase tracking-widest text-slate-500">{t('yourDecisionEyebrow')}</span>
-                    <span className="my-2 font-display text-7xl font-black text-indigo-600 drop-shadow-[0_0_20px_rgba(99,102,241,0.4)]">
-                        {result.fit_score}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-5">
+                <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl sm:col-span-3">
+                    <img src={`/images/sponsors/${result.product.brand}.webp`} alt="" className="h-9 w-auto object-contain" />
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 text-white shadow-[0_0_14px_rgba(99,102,241,0.5)]">
+                        <Icon name={result.product.icon} className="h-8 w-8" />
                     </span>
-                    <span className="text-slate-500">{t('outOf100')}</span>
-                    <span className="mt-4 rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 px-6 py-2 font-display font-bold text-white shadow-[0_0_14px_rgba(99,102,241,0.4)]">
+                    <p className="font-display text-3xl font-black text-slate-900">{result.product.name}</p>
+                    <p className="text-lg text-slate-600">{result.product.description}</p>
+                </div>
+
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl sm:col-span-2">
+                    <span className="text-sm uppercase tracking-widest text-slate-500">{t('matchLabel')}</span>
+                    <span className="my-2 font-display text-7xl font-black tabular-nums text-indigo-600 drop-shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+                        {result.fit_score}%
+                    </span>
+                    <span className="mt-2 rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 px-6 py-2 font-display font-bold text-white shadow-[0_0_14px_rgba(99,102,241,0.4)]">
                         {fitLabel}
                     </span>
                 </div>
+            </div>
 
-                <div className="grid grid-cols-1 gap-4">
-                    <ResultTile label={t('yourStrength')} value={result.strength} icon="✓" />
-                    <ResultTile label={t('yourProfile')} value={result.profile} icon="●" />
-                    <ResultTile label={t('yourTradeOff')} value={result.trade_off} icon="!" />
+            {result.reasons.length > 0 && (
+                <ResultList title={t('whyMatches')} items={result.reasons} tone="match" />
+            )}
+            {result.gaps.length > 0 && <ResultList title={t('notCovered')} items={result.gaps} tone="gap" />}
+
+            {result.alternatives.length > 0 && (
+                <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
+                    <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">{t('alsoConsider')}</p>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {result.alternatives.map((alternative) => (
+                            <div key={alternative.slug} className="flex items-center gap-4 rounded-xl bg-white/70 p-4">
+                                <Icon name={alternative.icon} className="h-8 w-8 shrink-0 text-indigo-500" />
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-slate-900">{alternative.name}</p>
+                                    <p className="text-sm text-slate-600">{alternative.description}</p>
+                                </div>
+                                <span className="font-display text-lg font-black tabular-nums text-indigo-600">{alternative.match}%</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
-                <p className="font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">{t('solutionLabel')}</p>
-                <p className="text-xl font-bold text-slate-900">{result.solution_label}</p>
-            </div>
+            )}
 
             {showEmailForm && !emailSent ? (
                 <form onSubmit={submitEmail} className="mt-8 rounded-2xl border border-white/70 bg-white/50 p-5 backdrop-blur-xl">
@@ -114,15 +135,22 @@ export default function ResultStage({
     );
 }
 
-function ResultTile({ label, value, icon }: { label: string; value: string; icon: string }) {
+function ResultList({ title, items, tone }: { title: string; items: string[]; tone: 'match' | 'gap' }) {
     return (
-        <div className="flex items-center gap-4 rounded-2xl border border-white/70 bg-white/50 p-5 backdrop-blur-xl">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 font-bold text-white shadow-[0_0_10px_rgba(99,102,241,0.4)]">
-                {icon}
-            </span>
-            <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{label}</p>
-                <p className="text-lg font-bold text-slate-900">{value}</p>
+        <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
+            <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">{title}</p>
+            <div className="flex flex-wrap gap-2">
+                {items.map((item) => (
+                    <span
+                        key={item}
+                        className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                            tone === 'match' ? 'bg-indigo-100/80 text-indigo-700' : 'bg-amber-100/80 text-amber-800'
+                        }`}
+                    >
+                        {tone === 'match' ? '✓ ' : '! '}
+                        {item}
+                    </span>
+                ))}
             </div>
         </div>
     );

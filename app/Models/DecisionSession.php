@@ -13,6 +13,9 @@ class DecisionSession extends Model
     protected $fillable = [
         'visitor_id',
         'email',
+        'role',
+        'answers',
+        'recommended_product',
         'business_case_id',
         'market_slug',
         'priority_1_slug',
@@ -31,6 +34,7 @@ class DecisionSession extends Model
     protected function casts(): array
     {
         return [
+            'answers' => 'array',
             'completed_at' => 'datetime',
             'email_requested_at' => 'datetime',
         ];

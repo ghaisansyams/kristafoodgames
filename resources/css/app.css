@@ -2,24 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Self-hosted (not a Google Fonts CDN call) so the booth works with no internet.
-   Fredoka is a variable font (weight 300-700) used for body text; Garet Heavy is a single
-   heavy weight used for headings, so it is declared across the full range to stop the
-   browser faking bold on top of it. */
+/* Self-hosted (not a Google Fonts CDN call) so the booth works with no internet. A single
+   variable-font file covers the 400-900 weight range used for display/heading text. */
 @font-face {
-    font-family: 'Fredoka';
+    font-family: 'Orbitron';
     font-style: normal;
-    font-weight: 300 700;
-    font-stretch: 75% 125%;
+    font-weight: 400 900;
     font-display: swap;
-    src: url('/fonts/fredoka.woff2') format('woff2');
+    src: url('/fonts/orbitron.woff2') format('woff2');
 }
-
-@font-face {
-    font-family: 'Garet';
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: url('/fonts/garet-heavy.woff2') format('woff2');
-}
-
