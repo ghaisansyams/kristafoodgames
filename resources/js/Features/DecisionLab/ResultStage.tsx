@@ -43,9 +43,18 @@ export default function ResultStage({
             <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-ink-900">{t('resultProductTitle')}</h2>
 
             <div className="flex flex-col items-center justify-center gap-6 rounded-3xl border border-ink-100 bg-white p-8 text-center shadow-card">
-                <div className="flex w-full flex-wrap items-center justify-center gap-8">
+                <div className="flex w-full items-center justify-center gap-4 sm:gap-8">
                     {result.product.logos.map((logo) => (
-                        <img key={logo} src={logo} alt={result.product.name} className={`max-h-44 object-contain ${result.product.logos.length === 1 ? 'max-w-[24rem]' : 'max-w-[14rem]'}`} />
+                        // min-w-0 + a percentage width let the logos shrink with the card on a phone instead of
+                        // overflowing it; several logos share the row equally.
+                        <img
+                            key={logo}
+                            src={logo}
+                            alt={result.product.name}
+                            className={`h-auto min-w-0 object-contain ${
+                                result.product.logos.length === 1 ? 'max-h-44 w-full max-w-[22rem]' : 'max-h-36 w-0 max-w-[12rem] flex-1'
+                            }`}
+                        />
                     ))}
                 </div>
                 <div>

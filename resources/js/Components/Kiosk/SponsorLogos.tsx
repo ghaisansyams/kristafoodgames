@@ -8,7 +8,7 @@
 export default function SponsorLogos({ className = '' }: { className?: string }) {
     return (
         <div className={`grid w-full max-w-[30rem] grid-cols-[1fr_auto_1fr] items-center gap-6 sm:gap-8 ${className}`}>
-            <img src="/images/sponsors/enza.webp" alt="Enza" className="mx-auto w-full max-w-[13rem] object-contain" />
+            <img src="/images/sponsors/enza.webp" alt="Enza" className="mx-auto w-[90%] max-w-[11.75rem] object-contain" />
             <span className="h-10 w-px bg-ink-400/40" />
             <img src="/images/sponsors/foopak.webp" alt="Foopak" className="mx-auto w-full max-w-[13rem] object-contain" />
         </div>
