@@ -69,11 +69,6 @@ class DecisionSessionController extends Controller
             'role' => $data['role'],
             'answers' => $answers,
             'recommended_product' => $result['solution_label'],
-            'weighted_score' => $result['weighted_score'],
-            'fit_score' => $result['fit_score'],
-            'profile' => $result['profile'],
-            'strength' => $result['strength'],
-            'trade_off' => $result['trade_off'],
             'completed_at' => now(),
         ]);
 

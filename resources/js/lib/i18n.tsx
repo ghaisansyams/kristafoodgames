@@ -82,9 +82,7 @@ const dict = {
         requirementsNote: 'Langkah ini muncul karena kami butuh sedikit informasi lagi untuk menentukan produk terbaik.',
         resultEyebrow: 'Rekomendasi untuk Anda',
         resultProductTitle: 'Produk yang Paling Cocok',
-        matchLabel: 'Kecocokan',
         whyMatches: 'Mengapa cocok',
-        notCovered: 'Layak didiskusikan dengan ahli kami',
         alsoConsider: 'Pertimbangkan juga',
 
         yourDecisionEyebrow: 'Keputusan Kemasan Anda',
@@ -244,9 +242,7 @@ const dict = {
         requirementsNote: 'This step only appears because we need a little more information to find the best product.',
         resultEyebrow: 'Your Recommendation',
         resultProductTitle: 'Your Best Product Match',
-        matchLabel: 'Match',
         whyMatches: 'Why it matches',
-        notCovered: 'Worth discussing with our expert',
         alsoConsider: 'Also consider',
 
         yourDecisionEyebrow: 'Your Packaging Decision',
@@ -406,9 +402,7 @@ const dict = {
         requirementsNote: '仅当我们需要更多信息来确定最佳产品时，才会出现此步骤。',
         resultEyebrow: '为您推荐',
         resultProductTitle: '最匹配的产品',
-        matchLabel: '匹配度',
         whyMatches: '匹配原因',
-        notCovered: '值得与我们的专家探讨',
         alsoConsider: '也可考虑',
 
         yourDecisionEyebrow: '您的包装决定',

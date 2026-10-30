@@ -55,8 +55,6 @@ export interface DecisionSession {
     visitor_id: number | null;
     role: Role | null;
     recommended_product: string | null;
-    fit_score: number | null;
-    profile: string | null;
     completed_at: string | null;
 }
 
@@ -69,17 +67,11 @@ export interface RecommendedProduct {
 }
 
 export interface DecisionResult {
-    weighted_score: number;
-    fit_score: number;
-    profile: string;
-    strength: string;
-    trade_off: string;
-    solution_label: string;
     role: Role;
+    solution_label: string;
     product: RecommendedProduct;
     reasons: string[];
-    gaps: string[];
-    alternatives: (RecommendedProduct & { match: number })[];
+    alternatives: RecommendedProduct[];
 }
 
 export type RecommendationResponse = { status: 'needs_more_info' } | { status: 'complete'; result: DecisionResult };

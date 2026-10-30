@@ -262,11 +262,10 @@ function HubScreen() {
                         {decisionLabResult && (
                             <div className="rounded-3xl border border-white/70 bg-white/50 p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
                                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{t('gameDecisionLabTitle')}</p>
-                                <p className="mt-1 font-display text-4xl font-black text-indigo-600">
-                                    {decisionLabResult.fit_score}
-                                    <span className="text-lg text-slate-500"> {t('outOf100')}</span>
+                                <p className="mt-1 font-display text-2xl font-black text-indigo-600">
+                                    {decisionLabResult.solution_label}
                                 </p>
-                                <p className="text-sm text-slate-600">{decisionLabResult.solution_label}</p>
+                                <p className="text-sm text-slate-600">{decisionLabResult.product.description}</p>
                             </div>
                         )}
 

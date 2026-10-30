@@ -46,7 +46,7 @@ class PackagingDecisionLabTest extends TestCase
         $response->assertJsonPath('status', 'complete')
             ->assertJsonPath('result.product.slug', 'foopak_natura_cup')
             ->assertJsonPath('result.solution_label', 'Foopak Natura Cup')
-            ->assertJsonPath('result.profile', 'Brand Owner');
+            ->assertJsonMissingPath('result.fit_score');
         $this->assertContains('Temperature Suitability', $response->json('result.reasons'));
 
         $session = $session->fresh();
@@ -54,7 +54,7 @@ class PackagingDecisionLabTest extends TestCase
         $this->assertSame('Foopak Natura Cup', $session->recommended_product);
         $this->assertSame('beverages', $session->answers['category']);
         $this->assertNotNull($session->completed_at);
-        $this->assertGreaterThanOrEqual(40, $session->fit_score);
+        $this->assertNull($session->fit_score);
     }
 
     public function test_converter_journey_matches_the_application_to_a_product(): void
@@ -71,8 +71,7 @@ class PackagingDecisionLabTest extends TestCase
         ])->assertOk()
             ->assertJsonPath('status', 'complete')
             ->assertJsonPath('result.product.slug', 'enza_shield')
-            ->assertJsonPath('result.product.brand', 'enza')
-            ->assertJsonPath('result.profile', 'Packaging Converter');
+            ->assertJsonPath('result.product.brand', 'enza');
 
         $cups = $this->postJson('/api/decision-sessions', [])->json('session');
         $this->postJson("/api/decision-sessions/{$cups['id']}/recommendation", [

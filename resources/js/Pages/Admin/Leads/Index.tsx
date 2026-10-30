@@ -3,9 +3,8 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { Download, Mail, Handshake } from 'lucide-react';
 
 interface DecisionResult {
-    business_case: string | null;
-    fit_score: number | null;
-    profile: string | null;
+    role: string | null;
+    product: string | null;
 }
 
 interface LeadRow {
@@ -60,7 +59,8 @@ export default function Index({ leads }: { leads: LeadRow[] }) {
                                     {lead.decision_results.length === 0 && <span className="text-slate-400">—</span>}
                                     {lead.decision_results.map((r, i) => (
                                         <div key={i} className="text-xs text-slate-600">
-                                            <span className="font-bold text-slate-900">{r.fit_score}/100</span> · {r.business_case}
+                                            <span className="font-bold text-slate-900">{r.product ?? '—'}</span>
+                                            {r.role && <span> · {r.role === 'converter' ? 'Converter' : 'Brand Owner'}</span>}
                                         </div>
                                     ))}
                                 </td>

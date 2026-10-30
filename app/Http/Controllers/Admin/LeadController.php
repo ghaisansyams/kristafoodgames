@@ -28,9 +28,8 @@ class LeadController extends Controller
                 'handoff_requested_at' => $visitor->handoff_requested_at,
                 'created_at' => $visitor->created_at,
                 'decision_results' => $visitor->decisionSessions->map(fn ($s) => [
-                    'business_case' => $s->businessCase?->title ?? $s->recommended_product,
-                    'fit_score' => $s->fit_score,
-                    'profile' => $s->profile,
+                    'role' => $s->role,
+                    'product' => $s->recommended_product ?? $s->businessCase?->title,
                 ]),
             ]);
 
@@ -43,9 +42,9 @@ class LeadController extends Controller
     {
         $visitors = Visitor::with(['decisionSessions.businessCase:id,title'])->latest()->get();
 
-        $rows = ['Name,Company,Job Title,Contact,Best Fit Score,Profile,Email Sent,Talk Requested,Captured At'];
+        $rows = ['Name,Company,Job Title,Contact,Decision Lab Role,Recommended Product,Email Sent,Talk Requested,Captured At'];
         foreach ($visitors as $visitor) {
-            $bestSession = $visitor->decisionSessions->whereNotNull('completed_at')->sortByDesc('fit_score')->first();
+            $latestSession = $visitor->decisionSessions->whereNotNull('completed_at')->sortByDesc('completed_at')->first();
             $rows[] = implode(',', array_map(
                 fn ($v) => '"'.str_replace('"', '""', (string) $v).'"',
                 [
@@ -53,8 +52,8 @@ class LeadController extends Controller
                     $visitor->company,
                     $visitor->job_title,
                     $visitor->contact,
-                    $bestSession?->fit_score ?? '',
-                    $bestSession?->profile ?? '',
+                    $latestSession?->role ?? '',
+                    $latestSession?->recommended_product ?? '',
                     $visitor->email_sent_at ?? '',
                     $visitor->handoff_requested_at ?? '',
                     $visitor->created_at,

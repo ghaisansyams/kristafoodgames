@@ -23,8 +23,6 @@ export default function ResultStage({
     const [emailError, setEmailError] = useState<string | null>(null);
     const [sendingEmail, setSendingEmail] = useState(false);
 
-    const fitLabel = result.fit_score >= 85 ? t('strongFit') : result.fit_score >= 65 ? t('goodFit') : t('fairFit');
-
     async function submitEmail(e: FormEvent) {
         e.preventDefault();
         setSendingEmail(true);
@@ -45,31 +43,18 @@ export default function ResultStage({
             </p>
             <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-slate-900">{t('resultProductTitle')}</h2>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-5">
-                <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl sm:col-span-3">
-                    <img src={`/images/sponsors/${result.product.brand}.webp`} alt="" className="h-9 w-auto object-contain" />
-                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 text-white shadow-[0_0_14px_rgba(99,102,241,0.5)]">
-                        <Icon name={result.product.icon} className="h-8 w-8" />
-                    </span>
-                    <p className="font-display text-3xl font-black text-slate-900">{result.product.name}</p>
-                    <p className="text-lg text-slate-600">{result.product.description}</p>
-                </div>
-
-                <div className="flex flex-col items-center justify-center rounded-3xl border border-white/70 bg-white/50 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl sm:col-span-2">
-                    <span className="text-sm uppercase tracking-widest text-slate-500">{t('matchLabel')}</span>
-                    <span className="my-2 font-display text-7xl font-black tabular-nums text-indigo-600 drop-shadow-[0_0_20px_rgba(99,102,241,0.4)]">
-                        {result.fit_score}%
-                    </span>
-                    <span className="mt-2 rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 px-6 py-2 font-display font-bold text-white shadow-[0_0_14px_rgba(99,102,241,0.4)]">
-                        {fitLabel}
-                    </span>
-                </div>
+            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
+                <img src={`/images/sponsors/${result.product.brand}.webp`} alt="" className="h-9 w-auto object-contain" />
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 text-white shadow-[0_0_14px_rgba(99,102,241,0.5)]">
+                    <Icon name={result.product.icon} className="h-8 w-8" />
+                </span>
+                <p className="font-display text-3xl font-black text-slate-900">{result.product.name}</p>
+                <p className="text-lg text-slate-600">{result.product.description}</p>
             </div>
 
             {result.reasons.length > 0 && (
-                <ResultList title={t('whyMatches')} items={result.reasons} tone="match" />
+                <ResultList title={t('whyMatches')} items={result.reasons} />
             )}
-            {result.gaps.length > 0 && <ResultList title={t('notCovered')} items={result.gaps} tone="gap" />}
 
             {result.alternatives.length > 0 && (
                 <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
@@ -82,7 +67,6 @@ export default function ResultStage({
                                     <p className="font-bold text-slate-900">{alternative.name}</p>
                                     <p className="text-sm text-slate-600">{alternative.description}</p>
                                 </div>
-                                <span className="font-display text-lg font-black tabular-nums text-indigo-600">{alternative.match}%</span>
                             </div>
                         ))}
                     </div>
@@ -135,20 +119,14 @@ export default function ResultStage({
     );
 }
 
-function ResultList({ title, items, tone }: { title: string; items: string[]; tone: 'match' | 'gap' }) {
+function ResultList({ title, items }: { title: string; items: string[] }) {
     return (
         <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
             <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">{title}</p>
             <div className="flex flex-wrap gap-2">
                 {items.map((item) => (
-                    <span
-                        key={item}
-                        className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                            tone === 'match' ? 'bg-indigo-100/80 text-indigo-700' : 'bg-amber-100/80 text-amber-800'
-                        }`}
-                    >
-                        {tone === 'match' ? '✓ ' : '! '}
-                        {item}
+                    <span key={item} className="rounded-full bg-indigo-100/80 px-4 py-2 text-sm font-semibold text-indigo-700">
+                        ✓ {item}
                     </span>
                 ))}
             </div>
