@@ -23,10 +23,10 @@ export default function StepHeader({
                     />
                 ))}
             </div>
-            <p className="font-display text-sm uppercase tracking-widest text-leaf-800">
+            <p className="font-display text-sm font-bold uppercase tracking-widest text-leaf-800">
                 {t('stepLabel', { step, total })}
             </p>
-            <h2 className="font-display text-3xl text-ink-900">{title}</h2>
+            <h2 className="font-display text-3xl font-bold text-ink-900">{title}</h2>
             {subtitle && <p className="mt-1 text-lg text-ink-600">{subtitle}</p>}
         </div>
     );

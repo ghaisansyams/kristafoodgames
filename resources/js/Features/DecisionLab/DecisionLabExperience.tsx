@@ -8,6 +8,7 @@ import { DecisionLogo } from '@/Components/Kiosk/GameLogos';
 import Icon from '@/lib/icons';
 import { ContentApi, DecisionSessionApi } from '@/lib/api';
 import { useLocale } from '@/lib/i18n';
+import { OPTION_ICONS, optionLabel } from '@/lib/optionContent';
 import { clearPersistedState, loadPersistedState, savePersistedState } from '@/lib/sessionPersistence';
 import ResultStage from './ResultStage';
 import type { DecisionLabContent, DecisionResult, JourneyAnswers, JourneyStep, Role } from '@/types/content';
@@ -66,7 +67,7 @@ export default function DecisionLabExperience({
     onBack: () => void;
     onResult?: (result: DecisionResult) => void;
 }) {
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
     const [stage, setStage] = useState<Stage>('loading');
     const [content, setContent] = useState<DecisionLabContent | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -258,25 +259,19 @@ export default function DecisionLabExperience({
                 {slugs.map((slug) => {
                     const option = content!.options[slug];
                     const rank = selectedSlugs.indexOf(slug);
+                    const label = optionLabel(slug, locale, option.label);
+                    const iconName = OPTION_ICONS[slug] ?? option.icon;
                     return (
                         <SelectCard
                             key={slug}
-                            title={option.label}
-                            compact={!option.icon}
+                            title={label}
+                            // The client's original English term stays visible under a translation.
+                            subtitle={label !== option.label ? option.label : undefined}
+                            icon={iconName ? <Icon name={iconName} className="h-6 w-6" /> : undefined}
+                            badge={ranked && rank !== -1 ? rank + 1 : undefined}
                             selected={rank !== -1}
                             onClick={() => onPick(slug)}
-                        >
-                            {(option.icon || (ranked && rank !== -1)) && (
-                                <div className="flex w-full items-center justify-between">
-                                    {option.icon ? <Icon name={option.icon} className="h-9 w-9 text-leaf-700" /> : <span />}
-                                    {ranked && rank !== -1 && (
-                                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-leaf-500 text-sm font-bold text-ink-900">
-                                            {rank + 1}
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-                        </SelectCard>
+                        />
                     );
                 })}
             </div>
@@ -289,7 +284,7 @@ export default function DecisionLabExperience({
 
         return withText.map((slug) => (
             <div key={slug} className="mt-4">
-                <p className="mb-2 text-sm font-semibold text-ink-600">{content!.options[slug].label}</p>
+                <p className="mb-2 text-sm font-semibold text-ink-600">{optionLabel(slug, locale, content!.options[slug].label)}</p>
                 <textarea
                     rows={2}
                     maxLength={300}
@@ -343,19 +338,17 @@ export default function DecisionLabExperience({
                         <SelectCard
                             title={t('roleBrandOwner')}
                             description={t('roleBrandOwnerDesc')}
+                            icon={<Icon name="store" className="h-6 w-6" />}
                             selected={role === 'brand_owner'}
                             onClick={() => chooseRole('brand_owner')}
-                        >
-                            <Icon name="store" className="h-10 w-10 text-leaf-700" />
-                        </SelectCard>
+                        />
                         <SelectCard
                             title={t('roleConverter')}
                             description={t('roleConverterDesc')}
+                            icon={<Icon name="factory" className="h-6 w-6" />}
                             selected={role === 'converter'}
                             onClick={() => chooseRole('converter')}
-                        >
-                            <Icon name="factory" className="h-10 w-10 text-leaf-700" />
-                        </SelectCard>
+                        />
                     </div>
                 </div>
             )}

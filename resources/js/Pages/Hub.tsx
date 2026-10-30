@@ -182,7 +182,7 @@ function HubScreen() {
     }
 
     return (
-        <CosmicBackground pauseHologram={stopwatchRunning}>
+        <CosmicBackground pauseHologram={stopwatchRunning} hideHologram={screen === 'decision_lab'}>
             <Head title="KRISTA FOOD 2026 — Interactive Experience Hub" />
 
             {(screen === 'idle' || screen === 'called' || screen === 'choose') && (

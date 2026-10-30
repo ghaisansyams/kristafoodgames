@@ -21,7 +21,7 @@ export default function TouchButton({
     return (
         <button
             {...props}
-            className={`min-h-[64px] rounded-full px-8 py-4 font-display text-xl uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0 ${variants[variant]} ${className}`}
+            className={`min-h-[64px] rounded-full px-8 py-4 font-display text-xl font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0 ${variants[variant]} ${className}`}
         >
             {children}
         </button>

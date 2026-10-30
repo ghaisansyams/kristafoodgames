@@ -11,8 +11,9 @@ import HologramEmblem from '@/Components/Kiosk/HologramEmblem';
 export default function CosmicBackground({
     className = '',
     pauseHologram = false,
+    hideHologram = false,
     children,
-}: PropsWithChildren<{ className?: string; pauseHologram?: boolean }>) {
+}: PropsWithChildren<{ className?: string; pauseHologram?: boolean; hideHologram?: boolean }>) {
     return (
         <div className={`relative min-h-screen overflow-hidden bg-gradient-to-br from-[#fbfaf3] via-[#f7f5e8] to-[#eff3dc] ${className}`}>
             {/* Injected once here (not per-screen) so every game's animated logo keeps its
@@ -44,10 +45,14 @@ export default function CosmicBackground({
                 the full scrollable page) rather than the header, so it fills the empty space
                 below short content (like the two-card game grid) without landing mid-content
                 on taller screens that need to scroll. */}
-            <HologramEmblem
-                paused={pauseHologram}
-                className="fixed bottom-0 left-1/2 h-[320px] w-[300px] -translate-x-1/2 opacity-80 sm:h-[400px] sm:w-[360px]"
-            />
+            {/* Left out on dense screens (the Decision Lab's option grids), where it would show
+                through the gaps between cards. */}
+            {!hideHologram && (
+                <HologramEmblem
+                    paused={pauseHologram}
+                    className="fixed bottom-0 left-1/2 h-[320px] w-[300px] -translate-x-1/2 opacity-80 sm:h-[400px] sm:w-[360px]"
+                />
+            )}
 
             <style>{`
                 @keyframes glow-breathe {
