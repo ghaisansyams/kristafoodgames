@@ -37,9 +37,9 @@ class PackagingDecisionLabTest extends TestCase
             'role' => 'brand_owner',
             'answers' => [
                 'category' => 'beverages',
-                'characteristics' => ['hot', 'cold', 'liquid'],
-                'applications' => ['takeaway', 'food_service'],
-                'priorities' => ['temperature', 'liquid_resistance', 'brand_presentation'],
+                'characteristics' => 'hot',
+                'applications' => 'takeaway',
+                'priorities' => 'temperature',
             ],
         ])->assertOk();
 
@@ -63,10 +63,10 @@ class PackagingDecisionLabTest extends TestCase
         $this->postJson("/api/decision-sessions/{$flexible['id']}/recommendation", [
             'role' => 'converter',
             'answers' => [
-                'applications' => ['conv_flexible'],
-                'processes' => ['proc_lamination', 'proc_pouch_making'],
-                'materials' => ['mat_barrier', 'mat_heat_sealability'],
-                'machines' => ['mach_speed'],
+                'applications' => 'conv_flexible',
+                'processes' => 'proc_pouch_making',
+                'materials' => 'mat_barrier',
+                'machines' => 'mach_speed',
             ],
         ])->assertOk()
             ->assertJsonPath('status', 'complete')
@@ -77,22 +77,13 @@ class PackagingDecisionLabTest extends TestCase
         $this->postJson("/api/decision-sessions/{$cups['id']}/recommendation", [
             'role' => 'converter',
             'answers' => [
-                'applications' => ['conv_cups'],
-                'processes' => ['proc_cup_forming'],
-                'materials' => ['mat_heat_hot_drinks', 'mat_liquid_resistance'],
+                'applications' => 'conv_cups',
+                'processes' => 'proc_cup_forming',
+                'materials' => 'mat_heat_hot_drinks',
             ],
-        ])->assertOk()->assertJsonPath('status', 'needs_more_info');
-
-        // Two paper-cup products are nearly tied until the visitor adds a specific requirement.
-        $this->postJson("/api/decision-sessions/{$cups['id']}/recommendation", [
-            'role' => 'converter',
-            'answers' => [
-                'applications' => ['conv_cups'],
-                'processes' => ['proc_cup_forming'],
-                'materials' => ['mat_heat_hot_drinks', 'mat_liquid_resistance'],
-                'requirements' => ['req_printing'],
-            ],
-        ])->assertOk()->assertJsonPath('result.product.slug', 'foopak_natura_cup');
+        ])->assertOk()
+            ->assertJsonPath('status', 'complete')
+            ->assertJsonPath('result.product.slug', 'foopak_natura_cup');
     }
 
     public function test_an_open_ended_answer_asks_for_requirements_before_completing(): void
@@ -100,9 +91,9 @@ class PackagingDecisionLabTest extends TestCase
         $session = $this->postJson('/api/decision-sessions', [])->json('session');
         $answers = [
             'category' => 'cat_other',
-            'characteristics' => ['hot', 'oily_greasy'],
-            'applications' => ['direct_sale'],
-            'priorities' => ['temperature', 'grease_resistance'],
+            'characteristics' => 'oily_greasy',
+            'applications' => 'direct_sale',
+            'priorities' => 'grease_resistance',
         ];
 
         $this->postJson("/api/decision-sessions/{$session['id']}/recommendation", ['role' => 'brand_owner', 'answers' => $answers])
@@ -113,7 +104,7 @@ class PackagingDecisionLabTest extends TestCase
 
         $this->postJson("/api/decision-sessions/{$session['id']}/recommendation", [
             'role' => 'brand_owner',
-            'answers' => [...$answers, 'requirements' => ['req_other', 'req_food_safety'], 'notes' => ['req_other' => 'Needs a lid']],
+            'answers' => [...$answers, 'requirements' => ['req_other'], 'notes' => ['req_other' => 'Needs a lid']],
         ])->assertOk()->assertJsonPath('status', 'complete');
 
         $stored = DecisionSession::find($session['id']);
@@ -133,10 +124,11 @@ class PackagingDecisionLabTest extends TestCase
             ],
         ])->assertOk()->assertJsonPath('status', 'complete');
 
-        $this->assertSame(['req_not_sure'], DecisionSession::find($session['id'])->answers['requirements']);
+        // Steps take a single answer, so only the first requirement is kept.
+        $this->assertSame(['req_barrier'], DecisionSession::find($session['id'])->answers['requirements']);
     }
 
-    public function test_answers_from_another_branch_or_beyond_the_limit_are_dropped(): void
+    public function test_answers_from_another_branch_or_beyond_one_pick_are_dropped(): void
     {
         $session = $this->postJson('/api/decision-sessions', [])->json('session');
 
@@ -152,8 +144,8 @@ class PackagingDecisionLabTest extends TestCase
 
         $answers = DecisionSession::find($session['id'])->answers;
 
-        $this->assertSame(['hot'], $answers['characteristics']);
-        $this->assertSame(['temperature', 'liquid_resistance', 'brand_presentation'], $answers['priorities']);
+        $this->assertSame('hot', $answers['characteristics']);
+        $this->assertSame('temperature', $answers['priorities']);
     }
 
     public function test_recommendation_requires_a_known_role_and_some_answers(): void

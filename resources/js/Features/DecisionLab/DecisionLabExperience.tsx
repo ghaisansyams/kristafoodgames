@@ -162,7 +162,7 @@ export default function DecisionLabExperience({
     }
 
     function selectOption(currentStep: JourneyStep, slug: string) {
-        if (!content) return;
+        if (!content || submitting) return;
 
         const current = answers[currentStep.key];
         let next: string | string[] | null;
@@ -192,32 +192,37 @@ export default function DecisionLabExperience({
         }
         setAnswers(updated);
 
-        if (currentStep.mode === 'single' && next) {
-            saveProgress(updated);
-            setStepIndex(stepIndex + 1);
+        // A single pick moves straight on, unless the option asks for free text first.
+        if (currentStep.mode === 'single' && next && !content.options[slug]?.text) {
+            advance(updated);
         }
     }
 
-    function toggleRequirement(slug: string) {
-        if (!content) return;
-
-        setRequirements((prev) => {
-            if (prev.includes(slug)) {
-                return prev.filter((picked) => picked !== slug);
-            }
-            if (content.options[slug]?.exclusive) {
-                return [slug];
-            }
-            return [...prev.filter((picked) => !content.options[picked]?.exclusive), slug];
-        });
+    function advance(current: JourneyAnswers) {
+        if (!journey) return;
+        if (stepIndex < journey.steps.length - 1) {
+            saveProgress(current);
+            setStepIndex(stepIndex + 1);
+        } else {
+            requestRecommendation(false, current);
+        }
     }
 
-    async function requestRecommendation(withRequirements: boolean) {
+    function pickRequirement(slug: string) {
+        if (!content || submitting) return;
+
+        setRequirements([slug]);
+        if (!content.options[slug]?.text) {
+            requestRecommendation(true, answers, [slug]);
+        }
+    }
+
+    async function requestRecommendation(withRequirements: boolean, current: JourneyAnswers = answers, picked: string[] = requirements) {
         if (!sessionId || !role) return;
         setSubmitting(true);
         setError(null);
         try {
-            const response = await DecisionSessionApi.recommend(sessionId, role, payload(answers, withRequirements));
+            const response = await DecisionSessionApi.recommend(sessionId, role, payload(current, withRequirements, picked));
             if (response.status === 'needs_more_info') {
                 setStage('requirements');
             } else {
@@ -233,13 +238,7 @@ export default function DecisionLabExperience({
     }
 
     function handleContinue() {
-        if (!journey) return;
-        if (stepIndex < journey.steps.length - 1) {
-            saveProgress(answers);
-            setStepIndex(stepIndex + 1);
-        } else {
-            requestRecommendation(false);
-        }
+        advance(answers);
     }
 
     function handlePreviousStep() {
@@ -333,7 +332,7 @@ export default function DecisionLabExperience({
                 </p>
             )}
 
-            {(stage === 'journey' || stage === 'requirements') && <CountdownBar totalSeconds={300} dangerSeconds={30} />}
+            {(stage === 'journey' || stage === 'requirements') && <CountdownBar totalSeconds={180} dangerSeconds={25} />}
 
             {stage === 'role' && (
                 <div className="mx-auto w-full max-w-3xl rounded-3xl border border-white/70 bg-white/50 p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
@@ -371,11 +370,12 @@ export default function DecisionLabExperience({
                     />
                     {renderOptionCards(stepOptions, stepSelection, (slug) => selectOption(step, slug), step.max !== undefined)}
                     {renderTextFields(stepSelection)}
+                    {submitting && <p className="mt-6 text-center font-semibold text-indigo-600">{t('findingProduct')}</p>}
                     <div className="mt-8 flex items-center justify-between gap-4">
                         <TouchButton variant="secondary" onClick={handlePreviousStep}>
                             {t('previousStep')}
                         </TouchButton>
-                        {step.mode === 'multi' && (
+                        {(step.mode === 'multi' || stepSelection.some((slug) => content.options[slug]?.text)) && (
                             <TouchButton disabled={stepSelection.length === 0 || submitting} onClick={handleContinue}>
                                 {submitting
                                     ? t('findingProduct')
@@ -397,15 +397,18 @@ export default function DecisionLabExperience({
                         subtitle={t(stepKey('requirements', '_q'))}
                     />
                     <p className="mb-4 text-sm text-slate-500">{t('requirementsNote')}</p>
-                    {renderOptionCards(journey.requirements, requirements, toggleRequirement, false)}
+                    {renderOptionCards(journey.requirements, requirements, pickRequirement, false)}
                     {renderTextFields(requirements)}
+                    {submitting && <p className="mt-6 text-center font-semibold text-indigo-600">{t('findingProduct')}</p>}
                     <div className="mt-8 flex items-center justify-between gap-4">
                         <TouchButton variant="secondary" onClick={handlePreviousStep}>
                             {t('previousStep')}
                         </TouchButton>
-                        <TouchButton disabled={requirements.length === 0 || submitting} onClick={() => requestRecommendation(true)}>
-                            {submitting ? t('findingProduct') : t('seeRecommendation')}
-                        </TouchButton>
+                        {requirements.some((slug) => content.options[slug]?.text) && (
+                            <TouchButton disabled={submitting} onClick={() => requestRecommendation(true)}>
+                                {submitting ? t('findingProduct') : t('seeRecommendation')}
+                            </TouchButton>
+                        )}
                     </div>
                 </div>
             )}

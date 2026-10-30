@@ -246,7 +246,7 @@ return [
 
     'journeys' => [
         'brand_owner' => [
-            // `single` steps pick one option, `multi` steps any number (up to `max`). A step with
+            // Every step takes exactly one option (the engine also supports `multi` steps). A step with
             // `depends_on` shows `options_by[<earlier answer>]`; `derive` builds the list from
             // earlier answers instead (the "Other" category, "relevant priorities only").
             'steps' => [
@@ -257,7 +257,7 @@ return [
                 ],
                 [
                     'key' => 'characteristics',
-                    'mode' => 'multi',
+                    'mode' => 'single',
                     'depends_on' => 'category',
                     'options_by' => [
                         'beverages' => ['hot', 'cold', 'liquid', 'semi_liquid'],
@@ -271,7 +271,7 @@ return [
                 ],
                 [
                     'key' => 'applications',
-                    'mode' => 'multi',
+                    'mode' => 'single',
                     'depends_on' => 'category',
                     'options_by' => [
                         'beverages' => ['food_service', 'takeaway', 'delivery', 'retail_distribution'],
@@ -285,8 +285,7 @@ return [
                 ],
                 [
                     'key' => 'priorities',
-                    'mode' => 'multi',
-                    'max' => 3,
+                    'mode' => 'single',
                     'depends_on' => 'category',
                     'options_by' => [
                         'beverages' => ['temperature', 'liquid_resistance', 'brand_presentation', 'material_eol'],
@@ -322,12 +321,12 @@ return [
             'steps' => [
                 [
                     'key' => 'applications',
-                    'mode' => 'multi',
+                    'mode' => 'single',
                     'options' => ['conv_flexible', 'conv_wrapping', 'conv_cups', 'conv_bowls', 'conv_containers', 'conv_bags', 'conv_general', 'conv_other'],
                 ],
                 [
                     'key' => 'processes',
-                    'mode' => 'multi',
+                    'mode' => 'single',
                     'depends_on' => 'applications',
                     'options_by' => [
                         'conv_flexible' => ['proc_lamination', 'proc_coating', 'proc_print_flexo_gravure_offset', 'proc_slitting_rewinding', 'proc_pouch_making'],
@@ -342,7 +341,7 @@ return [
                 ],
                 [
                     'key' => 'materials',
-                    'mode' => 'multi',
+                    'mode' => 'single',
                     'depends_on' => 'applications',
                     'options_by' => [
                         'conv_flexible' => ['mat_barrier', 'mat_heat_sealability', 'mat_grease_resistance', 'mat_water_resistance', 'mat_printability'],
@@ -357,7 +356,7 @@ return [
                 ],
                 [
                     'key' => 'machines',
-                    'mode' => 'multi',
+                    'mode' => 'single',
                     'depends_on' => 'applications',
                     'options_by' => [
                         'conv_flexible' => ['mach_lamination_type', 'mach_coating_type', 'mach_printing_method', 'mach_speed', 'mach_web_width'],

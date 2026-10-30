@@ -139,7 +139,7 @@ class DecisionLabCatalog
                 fn ($slug) => is_string($slug) && in_array($slug, $journey['requirements'], true),
             )));
 
-            $clean['requirements'] = in_array('req_not_sure', $picked, true) ? ['req_not_sure'] : $picked;
+            $clean['requirements'] = array_slice($picked, 0, 1);
         }
 
         $clean['notes'] = $this->sanitizeNotes($answers['notes'] ?? [], $clean);
