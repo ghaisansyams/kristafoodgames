@@ -232,14 +232,7 @@ function HubScreen() {
             {screen === 'choose' && (
                 <div className="flex min-h-screen flex-col items-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
-                    <div className="pt-4">
-                        <p className="font-display mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">
-                            {t('chooseEyebrow')}
-                        </p>
-                        <h1 className="font-display text-3xl font-black uppercase text-ink-900">
-                            {t('waysToPlay', { n: GAMES.length })}
-                        </h1>
-                    </div>
+                    <h1 className="pt-4 font-display text-3xl font-black uppercase text-ink-900">{t('chooseEyebrow')}</h1>
                     <div className="flex w-full max-w-md flex-wrap justify-center gap-4">
                         {GAMES.map((game) => (
                             <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
