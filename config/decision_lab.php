@@ -19,13 +19,14 @@
 */
 
 return [
-    // Shown on the recommendation screen; `brand` selects the logo.
+    // Shown on the recommendation screen; `logos` are the product logos in public/images/products.
     'products' => [
         'foopak_bio_natura' => [
             'name' => 'Foopak Bio Natura',
             'brand' => 'foopak',
             'description' => 'Cups, bowls and food containers with a plastic-free coating.',
             'icon' => 'leaf',
+            'logos' => ['/images/products/bio-natura.webp'],
             'affinity' => ['hot' => 2, 'cold' => 2, 'frozen' => 1, 'liquid' => 3, 'saucy' => 2, 'grease' => 2, 'plastic_free' => 3, 'food_contact' => 3, 'cup' => 3, 'bowl' => 3, 'box' => 2, 'print_quality' => 2, 'stiff' => 2, 'takeaway' => 2],
         ],
         'foopak_natura_cup' => [
@@ -33,6 +34,7 @@ return [
             'brand' => 'foopak',
             'description' => 'Hot and cold beverage cups.',
             'icon' => 'cup-soda',
+            'logos' => ['/images/products/natura.webp'],
             'affinity' => ['hot' => 3, 'cold' => 3, 'frozen' => 1, 'liquid' => 3, 'cup' => 3, 'print_quality' => 2, 'food_contact' => 3, 'stiff' => 2, 'plastic_free' => 1, 'takeaway' => 2],
         ],
         'foopak_natura_gloss' => [
@@ -40,6 +42,7 @@ return [
             'brand' => 'foopak',
             'description' => 'Cups and bowls with a glossy finish.',
             'icon' => 'soup',
+            'logos' => ['/images/products/natura-gloss.webp'],
             'affinity' => ['hot' => 2, 'cold' => 2, 'frozen' => 2, 'liquid' => 2, 'cup' => 2, 'bowl' => 3, 'glossy' => 3, 'print_quality' => 3, 'retail_display' => 3, 'food_contact' => 3, 'stiff' => 2, 'plastic_free' => 1],
         ],
         'foopak_bio_container' => [
@@ -47,6 +50,7 @@ return [
             'brand' => 'foopak',
             'description' => 'Sandwich boxes, salad boxes and food containers.',
             'icon' => 'package',
+            'logos' => ['/images/products/bio-container.webp'],
             'affinity' => ['hot' => 1, 'saucy' => 1, 'grease' => 2, 'box' => 3, 'plastic_free' => 3, 'food_contact' => 3, 'stiff' => 3, 'takeaway' => 3, 'retail_display' => 2],
         ],
         'foopak_pe_board' => [
@@ -54,6 +58,7 @@ return [
             'brand' => 'foopak',
             'description' => 'Takeaway meals, rice boxes, hot and gravy food.',
             'icon' => 'package',
+            'logos' => ['/images/products/pe-board.webp'],
             'affinity' => ['hot' => 3, 'saucy' => 3, 'liquid' => 2, 'grease' => 3, 'box' => 3, 'bowl' => 2, 'takeaway' => 3, 'stiff' => 3, 'food_contact' => 3, 'barrier' => 1],
         ],
         'foopak_greaseproof' => [
@@ -61,6 +66,7 @@ return [
             'brand' => 'foopak',
             'description' => 'Wrappers, liners and food bags for greasy foods.',
             'icon' => 'sandwich',
+            'logos' => ['/images/products/greaseproof-paper.webp', '/images/products/greaseproof-board.webp'],
             'affinity' => ['grease' => 3, 'hot' => 2, 'wrap' => 3, 'bag' => 3, 'dry' => 2, 'plastic_free' => 2, 'food_contact' => 3, 'print_quality' => 2, 'box' => 1, 'takeaway' => 2],
         ],
         'enza_shield' => [
@@ -68,6 +74,7 @@ return [
             'brand' => 'enza',
             'description' => 'Flexible packaging, barrier and sealing applications.',
             'icon' => 'scroll',
+            'logos' => ['/images/products/enza-shield.webp'],
             'affinity' => ['barrier' => 3, 'heat_seal' => 3, 'flexible_format' => 3, 'dry' => 3, 'powder' => 3, 'fragile' => 1, 'frozen' => 2, 'cold' => 1, 'storage' => 3, 'retail_display' => 2, 'print_quality' => 2, 'grease' => 2, 'liquid' => 1],
         ],
         'foopak_hardsize' => [
@@ -75,6 +82,7 @@ return [
             'brand' => 'foopak',
             'description' => 'Food boxes, trays and confectionery packaging.',
             'icon' => 'boxes',
+            'logos' => ['/images/products/hardsize.webp'],
             'affinity' => ['box' => 3, 'dry' => 3, 'fragile' => 3, 'retail_display' => 3, 'print_quality' => 3, 'stiff' => 3, 'secondary' => 1, 'storage' => 2, 'food_contact' => 2],
         ],
         'sinar_board' => [
@@ -82,6 +90,7 @@ return [
             'brand' => 'foopak',
             'description' => 'General and secondary packaging.',
             'icon' => 'boxes',
+            'logos' => ['/images/products/sinar-fold.webp', '/images/products/sinar-board.webp', '/images/products/sinar-vanda.webp'],
             'affinity' => ['secondary' => 3, 'stiff' => 3, 'box' => 2, 'print_quality' => 3, 'storage' => 3, 'retail_display' => 2, 'dry' => 2, 'fragile' => 2],
         ],
     ],

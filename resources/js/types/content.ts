@@ -64,6 +64,7 @@ export interface RecommendedProduct {
     brand: 'foopak' | 'enza';
     description: string;
     icon: string;
+    logos: string[];
 }
 
 export interface DecisionResult {

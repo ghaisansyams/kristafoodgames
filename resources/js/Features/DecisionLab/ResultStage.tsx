@@ -1,6 +1,5 @@
 import { FormEvent, useState } from 'react';
 import TouchButton from '@/Components/Kiosk/TouchButton';
-import Icon from '@/lib/icons';
 import { useLocale } from '@/lib/i18n';
 import type { DecisionResult } from '@/types/content';
 
@@ -43,13 +42,16 @@ export default function ResultStage({
             </p>
             <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-slate-900">{t('resultProductTitle')}</h2>
 
-            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/70 bg-white/50 p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
-                <img src={`/images/sponsors/${result.product.brand}.webp`} alt="" className="h-9 w-auto object-contain" />
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 text-white shadow-[0_0_14px_rgba(99,102,241,0.5)]">
-                    <Icon name={result.product.icon} className="h-8 w-8" />
-                </span>
-                <p className="font-display text-3xl font-black text-slate-900">{result.product.name}</p>
-                <p className="text-lg text-slate-600">{result.product.description}</p>
+            <div className="flex flex-col items-center justify-center gap-6 rounded-3xl border border-white/70 bg-white/60 p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
+                <div className="flex w-full flex-wrap items-center justify-center gap-8">
+                    {result.product.logos.map((logo) => (
+                        <img key={logo} src={logo} alt={result.product.name} className={`max-h-44 object-contain ${result.product.logos.length === 1 ? 'max-w-[24rem]' : 'max-w-[14rem]'}`} />
+                    ))}
+                </div>
+                <div>
+                    <p className="font-display text-2xl font-black text-slate-900">{result.product.name}</p>
+                    <p className="mt-1 text-lg text-slate-600">{result.product.description}</p>
+                </div>
             </div>
 
             {result.reasons.length > 0 && (
@@ -62,7 +64,7 @@ export default function ResultStage({
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {result.alternatives.map((alternative) => (
                             <div key={alternative.slug} className="flex items-center gap-4 rounded-xl bg-white/70 p-4">
-                                <Icon name={alternative.icon} className="h-8 w-8 shrink-0 text-indigo-500" />
+                                <img src={alternative.logos[0]} alt="" className="h-12 w-20 shrink-0 object-contain" />
                                 <div className="min-w-0 flex-1">
                                     <p className="font-bold text-slate-900">{alternative.name}</p>
                                     <p className="text-sm text-slate-600">{alternative.description}</p>

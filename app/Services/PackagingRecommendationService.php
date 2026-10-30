@@ -93,7 +93,7 @@ class PackagingRecommendationService
     }
 
     /**
-     * @return array{slug: string, name: string, brand: string, description: string, icon: string}
+     * @return array{slug: string, name: string, brand: string, description: string, icon: string, logos: string[]}
      */
     private function presentProduct(string $slug): array
     {
@@ -105,6 +105,7 @@ class PackagingRecommendationService
             'brand' => $product['brand'],
             'description' => $product['description'],
             'icon' => $product['icon'],
+            'logos' => $product['logos'],
         ];
     }
 
