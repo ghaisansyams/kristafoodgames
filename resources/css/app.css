@@ -2,12 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Self-hosted (not a Google Fonts CDN call) so the booth works with no internet. A single
-   variable-font file covers the 400-900 weight range used for display/heading text. */
+/* Self-hosted (not a Google Fonts CDN call) so the booth works with no internet.
+   Fredoka is a variable font (weight 300-700, width 75-125%) used for body text; Garet Heavy
+   is a single heavy weight used for headings, so it is declared across the full weight range
+   to stop the browser faking an even heavier bold on top of it. */
 @font-face {
-    font-family: 'Orbitron';
+    font-family: 'Fredoka';
     font-style: normal;
-    font-weight: 400 900;
+    font-weight: 300 700;
+    font-stretch: 75% 125%;
     font-display: swap;
-    src: url('/fonts/orbitron.woff2') format('woff2');
+    src: url('/fonts/fredoka.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Garet';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('/fonts/garet-heavy.woff2') format('woff2');
+}
+
+@layer components {
+    /* The one surface every kiosk panel sits on: a solid white card with a soft olive-tinted
+       shadow, replacing the old frosted-glass look. */
+    .kiosk-card {
+        @apply rounded-3xl border border-ink-100 bg-white shadow-card;
+    }
 }

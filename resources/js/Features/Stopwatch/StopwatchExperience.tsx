@@ -141,26 +141,26 @@ export default function StopwatchExperience({
         <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center px-6 py-10">
             <button
                 onClick={onBack}
-                className="mb-4 flex w-fit items-center gap-2 self-start text-sm font-semibold text-slate-600 hover:text-slate-900"
+                className="mb-4 flex w-fit items-center gap-2 self-start text-sm font-semibold text-ink-600 hover:text-ink-900"
             >
                 <ArrowLeft className="h-4 w-4" /> {t('back')}
             </button>
 
             <StopwatchLogo className={`mb-2 h-20 w-20 ${phase === 'running' ? 'animate-pulse' : ''}`} />
-            <h2 className="mb-1 font-display text-3xl font-black uppercase text-slate-900">{t('stopwatchTitle')}</h2>
-            <p className="mb-8 text-center text-slate-600">{t('stopwatchInstructions')}</p>
+            <h2 className="mb-1 font-display text-3xl font-black uppercase text-ink-900">{t('stopwatchTitle')}</h2>
+            <p className="mb-8 text-center text-ink-600">{t('stopwatchInstructions')}</p>
 
             {/* The stopwatch face itself never leaves the screen, and never gets covered by a
                 popup — the result is read straight off it, like a real stopwatch. */}
-            <div className="mb-6 rounded-3xl border border-white/70 bg-white/50 px-10 py-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
-                <span className="font-display text-6xl font-black tabular-nums text-indigo-600 drop-shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+            <div className="mb-6 rounded-3xl border border-ink-100 bg-white px-10 py-8 shadow-card">
+                <span className="font-display text-6xl font-black tabular-nums text-citrus-600">
                     {(phase === 'result' ? finalElapsed! : elapsed).toFixed(2)}
                 </span>
-                <span className="ml-1 text-2xl text-slate-500">s</span>
+                <span className="ml-1 text-2xl text-ink-500">s</span>
             </div>
 
             {phase === 'result' && (
-                <p className="mb-6 text-center text-slate-600">
+                <p className="mb-6 text-center text-ink-600">
                     {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} —{' '}
                     {diff!.toFixed(2)}s {t('offTarget')}
                 </p>
@@ -177,8 +177,8 @@ export default function StopwatchExperience({
                     <TouchButton variant={won ? 'secondary' : 'ghost'} onClick={handlePress}>
                         {t('playAgain')}
                     </TouchButton>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">{t('pressSpaceToPlayAgain')}</p>
-                    <button onClick={onBack} className="text-sm font-semibold text-slate-500 underline hover:text-slate-900">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-leaf-800">{t('pressSpaceToPlayAgain')}</p>
+                    <button onClick={onBack} className="text-sm font-semibold text-ink-500 underline hover:text-ink-900">
                         {t('back')}
                     </button>
                 </div>

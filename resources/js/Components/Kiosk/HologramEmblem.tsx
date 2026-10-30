@@ -17,13 +17,13 @@ export default function HologramEmblem({ className = '', paused = false }: { cla
             <svg viewBox="0 0 320 420" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMax meet">
                 <defs>
                     <linearGradient id="holo-beam" x1="0" y1="1" x2="0" y2="0">
-                        <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
+                        <stop offset="0%" stopColor="#a3c226" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="#a3c226" stopOpacity="0" />
                     </linearGradient>
                     <radialGradient id="holo-base" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#a5b4fc" stopOpacity="0.9" />
-                        <stop offset="70%" stopColor="#a5b4fc" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#a5b4fc" stopOpacity="0" />
+                        <stop offset="0%" stopColor="#c4d965" stopOpacity="0.9" />
+                        <stop offset="70%" stopColor="#c4d965" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#c4d965" stopOpacity="0" />
                     </radialGradient>
                 </defs>
 
@@ -32,14 +32,14 @@ export default function HologramEmblem({ className = '', paused = false }: { cla
 
                 {/* The glowing projector base the box appears to float above. */}
                 <ellipse cx="160" cy="404" rx="86" ry="13" fill="url(#holo-base)" />
-                <ellipse cx="160" cy="404" rx="86" ry="13" fill="none" stroke="#818cf8" strokeOpacity="0.55" strokeWidth="1.5" />
+                <ellipse cx="160" cy="404" rx="86" ry="13" fill="none" stroke="#87a31a" strokeOpacity="0.55" strokeWidth="1.5" />
                 <ellipse
                     cx="160"
                     cy="404"
                     rx="60"
                     ry="8"
                     fill="none"
-                    stroke="#5eead4"
+                    stroke="#f39308"
                     strokeOpacity="0.4"
                     strokeWidth="1"
                     className="holo-anim"
@@ -47,8 +47,8 @@ export default function HologramEmblem({ className = '', paused = false }: { cla
                 />
             </svg>
 
-            {/* The box itself — six translucent glass faces, each tinted a different accent
-                color, held together by real browser 3D transforms and spun on a slow loop. */}
+            {/* The box itself — six translucent glass faces tinted in the brand green and
+                orange, held together by real browser 3D transforms and spun on a slow loop. */}
             <div className="absolute left-1/2 top-[26%] -translate-x-1/2" style={{ perspective: '700px' }}>
                 <div
                     className="holo-cube holo-anim"
@@ -91,12 +91,12 @@ export default function HologramEmblem({ className = '', paused = false }: { cla
                     box-shadow: inset 0 0 18px rgba(255,255,255,0.35);
                     backdrop-filter: blur(1px);
                 }
-                .holo-face-front { background: rgba(99,102,241,0.3); transform: translateZ(42px); }
-                .holo-face-back { background: rgba(244,114,182,0.28); transform: rotateY(180deg) translateZ(42px); }
-                .holo-face-right { background: rgba(94,234,212,0.3); transform: rotateY(90deg) translateZ(42px); }
-                .holo-face-left { background: rgba(192,132,252,0.3); transform: rotateY(-90deg) translateZ(42px); }
-                .holo-face-top { background: rgba(165,180,252,0.4); transform: rotateX(90deg) translateZ(42px); }
-                .holo-face-bottom { background: rgba(129,140,248,0.22); transform: rotateX(-90deg) translateZ(42px); }
+                .holo-face-front { background: rgba(163,194,38,0.32); transform: translateZ(42px); }
+                .holo-face-back { background: rgba(243,147,8,0.28); transform: rotateY(180deg) translateZ(42px); }
+                .holo-face-right { background: rgba(243,147,8,0.3); transform: rotateY(90deg) translateZ(42px); }
+                .holo-face-left { background: rgba(196,217,101,0.32); transform: rotateY(-90deg) translateZ(42px); }
+                .holo-face-top { background: rgba(217,231,154,0.45); transform: rotateX(90deg) translateZ(42px); }
+                .holo-face-bottom { background: rgba(135,163,26,0.22); transform: rotateX(-90deg) translateZ(42px); }
 
                 @keyframes holo-cube-spin {
                     from { transform: rotateX(-16deg) rotateY(0deg); }

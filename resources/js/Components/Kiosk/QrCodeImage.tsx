@@ -6,7 +6,7 @@ export default function QrCodeImage({ value, className = 'h-56 w-56' }: { value:
 
     useEffect(() => {
         let cancelled = false;
-        QRCode.toDataURL(value, { margin: 1, width: 512, color: { dark: '#0f172a', light: '#ffffff' } })
+        QRCode.toDataURL(value, { margin: 1, width: 512, color: { dark: '#1f2a12', light: '#ffffff' } })
             .then((url) => {
                 if (!cancelled) setDataUrl(url);
             })
@@ -19,7 +19,7 @@ export default function QrCodeImage({ value, className = 'h-56 w-56' }: { value:
     }, [value]);
 
     if (!dataUrl) {
-        return <div className={`animate-pulse rounded-2xl bg-slate-200 ${className}`} />;
+        return <div className={`animate-pulse rounded-2xl bg-ink-100 ${className}`} />;
     }
 
     return <img src={dataUrl} alt="Scan to join" className={`rounded-2xl bg-white p-3 ${className}`} />;

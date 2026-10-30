@@ -195,20 +195,20 @@ function HubScreen() {
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
                     <StopwatchLogo className="h-32 w-32" />
-                    <h1 className="font-display text-5xl font-black uppercase leading-tight text-slate-900">
+                    <h1 className="font-display text-5xl font-black uppercase leading-tight text-ink-900">
                         {t('heroLine1')}
                         <br />
-                        <span className="bg-gradient-to-r from-indigo-400 via-violet-500 to-purple-600 bg-clip-text text-transparent">
+                        <span className="text-citrus-600">
                             {t('heroLine2')}
                         </span>
                     </h1>
 
-                    <p className="max-w-xs text-sm text-slate-600">{t('idleTakeTicket')}</p>
+                    <p className="max-w-xs text-sm text-ink-600">{t('idleTakeTicket')}</p>
 
                     {/* For visitors already in the company's own customer database who'd rather
                         not queue for a ticket — goes straight to the games, no visitor record
                         attached (so results won't show up under their name on the leaderboard). */}
-                    <button onClick={goToChoose} className="text-sm text-slate-500 underline hover:text-slate-700">
+                    <button onClick={goToChoose} className="text-sm text-ink-500 underline hover:text-ink-700">
                         {t('skipAndPlay')}
                     </button>
 
@@ -218,13 +218,13 @@ function HubScreen() {
 
             {screen === 'called' && calledTicket && (
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
-                    <Sparkles className="h-16 w-16 animate-bounce text-indigo-500" strokeWidth={1.5} />
-                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
+                    <Sparkles className="h-16 w-16 animate-bounce text-citrus-500" strokeWidth={1.5} />
+                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">
                         {t('calledHeading', { number: calledTicket.number })}
                     </p>
-                    {calledTicket.visitor_name && <p className="text-sm text-slate-600">{t('calledName', { name: calledTicket.visitor_name })}</p>}
-                    <h1 className="font-display text-4xl font-black uppercase text-slate-900">{t('calledInstruction')}</h1>
-                    <p className="font-display text-sm font-bold text-indigo-500">{t('calledCountdown', { seconds: countdown })}</p>
+                    {calledTicket.visitor_name && <p className="text-sm text-ink-600">{t('calledName', { name: calledTicket.visitor_name })}</p>}
+                    <h1 className="font-display text-4xl font-black uppercase text-ink-900">{t('calledInstruction')}</h1>
+                    <p className="font-display text-sm font-bold text-leaf-800">{t('calledCountdown', { seconds: countdown })}</p>
                     <TouchButton onClick={handleImHere}>{t('imHereStartPlaying')}</TouchButton>
                 </div>
             )}
@@ -233,10 +233,10 @@ function HubScreen() {
                 <div className="flex min-h-screen flex-col items-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
                     <div className="pt-4">
-                        <p className="font-display mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
+                        <p className="font-display mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">
                             {t('chooseEyebrow')}
                         </p>
-                        <h1 className="font-display text-3xl font-black uppercase text-slate-900">
+                        <h1 className="font-display text-3xl font-black uppercase text-ink-900">
                             {t('waysToPlay', { n: GAMES.length })}
                         </h1>
                     </div>
@@ -245,7 +245,7 @@ function HubScreen() {
                             <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
                         ))}
                     </div>
-                    <button onClick={finishVisit} className="mt-2 text-sm text-slate-500 underline">
+                    <button onClick={finishVisit} className="mt-2 text-sm text-ink-500 underline">
                         {t('imDoneNextGuest')}
                     </button>
                 </div>
@@ -253,29 +253,29 @@ function HubScreen() {
 
             {screen === 'summary' && (
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
-                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
+                    <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">
                         {t('summaryEyebrow')}
                     </p>
-                    <h1 className="font-display text-3xl font-black uppercase text-slate-900">{t('summaryTitle')}</h1>
+                    <h1 className="font-display text-3xl font-black uppercase text-ink-900">{t('summaryTitle')}</h1>
 
                     <div className="flex w-full max-w-md flex-col gap-4">
                         {decisionLabResult && (
-                            <div className="rounded-3xl border border-white/70 bg-white/50 p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
-                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">{t('gameDecisionLabTitle')}</p>
-                                <p className="mt-1 font-display text-2xl font-black text-indigo-600">
+                            <div className="rounded-3xl border border-ink-100 bg-white p-6 text-left shadow-card">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">{t('gameDecisionLabTitle')}</p>
+                                <p className="mt-1 font-display text-2xl font-black text-leaf-700">
                                     {decisionLabResult.solution_label}
                                 </p>
-                                <p className="text-sm text-slate-600">{decisionLabResult.product.description}</p>
+                                <p className="text-sm text-ink-600">{decisionLabResult.product.description}</p>
                             </div>
                         )}
 
                         {stopwatchBest && (
-                            <div className="rounded-3xl border border-white/70 bg-white/50 p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
-                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                            <div className="rounded-3xl border border-ink-100 bg-white p-6 text-left shadow-card">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">
                                     {t('summaryStopwatchBestLabel')}
                                 </p>
-                                <p className="mt-1 font-display text-4xl font-black text-indigo-600">{stopwatchBest.elapsed.toFixed(2)}s</p>
-                                <p className="text-sm text-slate-600">
+                                <p className="mt-1 font-display text-4xl font-black text-citrus-600">{stopwatchBest.elapsed.toFixed(2)}s</p>
+                                <p className="text-sm text-ink-600">
                                     {stopwatchBest.won
                                         ? t('perfectTiming')
                                         : `${Math.abs(stopwatchBest.elapsed - 10).toFixed(2)}s ${t('offTarget')}`}
@@ -320,13 +320,13 @@ function GameCard({
     return (
         <button
             onClick={onClick}
-            className="group flex min-h-[170px] w-[47%] min-w-[150px] flex-col items-center justify-center gap-2 rounded-3xl border border-white/70 bg-white/50 p-5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.12)] backdrop-blur-xl transition hover:border-indigo-200 hover:bg-white/70 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.3)] active:scale-95"
+            className="group flex min-h-[170px] w-[47%] min-w-[150px] flex-col items-center justify-center gap-2 rounded-3xl border border-ink-100 bg-white p-5 text-center shadow-card transition hover:border-leaf-200 hover:bg-leaf-50 hover:shadow-card active:scale-95"
         >
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-gradient-to-br from-indigo-200/60 to-violet-300/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-100">
                 <Logo className="h-10 w-10" />
             </span>
-            <span className="font-display text-base font-black uppercase leading-tight text-slate-900">{game.title}</span>
-            <span className="text-xs text-slate-600">{game.tagline}</span>
+            <span className="font-display text-base font-black uppercase leading-tight text-ink-900">{game.title}</span>
+            <span className="text-xs text-ink-600">{game.tagline}</span>
         </button>
     );
 }

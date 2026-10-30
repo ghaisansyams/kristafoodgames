@@ -38,12 +38,12 @@ export default function LeaderboardOptIn({ onRecorded }: { onRecorded: (visitorI
     }
 
     if (recorded) {
-        return <p className="text-sm font-semibold text-indigo-600">{t('summaryRecordSuccess')}</p>;
+        return <p className="text-sm font-semibold text-leaf-800">{t('summaryRecordSuccess')}</p>;
     }
 
     if (!open) {
         return (
-            <button onClick={() => setOpen(true)} className="text-sm font-semibold text-indigo-600 underline">
+            <button onClick={() => setOpen(true)} className="text-sm font-semibold text-leaf-800 underline">
                 {t('summaryRecordPrompt')}
             </button>
         );
@@ -52,9 +52,9 @@ export default function LeaderboardOptIn({ onRecorded }: { onRecorded: (visitorI
     return (
         <form
             onSubmit={submit}
-            className="w-full max-w-md space-y-3 rounded-3xl border border-white/70 bg-white/50 p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl"
+            className="w-full max-w-md space-y-3 rounded-3xl border border-ink-100 bg-white p-6 text-left shadow-card"
         >
-            <p className="text-sm font-semibold text-slate-700">{t('summaryRecordSubtitle')}</p>
+            <p className="text-sm font-semibold text-ink-700">{t('summaryRecordSubtitle')}</p>
             <Field placeholder={t('fullName')} value={data.name} onChange={(v) => setData((d) => ({ ...d, name: v }))} />
             <Field
                 placeholder={t('companyOrInstitution')}
@@ -70,7 +70,7 @@ export default function LeaderboardOptIn({ onRecorded }: { onRecorded: (visitorI
             />
             <Field placeholder={t('email')} type="email" value={data.email} onChange={(v) => setData((d) => ({ ...d, email: v }))} />
 
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-red-600">{error}</p>}
 
             <TouchButton type="submit" disabled={!isValid || submitting} className="w-full">
                 {submitting ? t('summaryRecordSubmitting') : t('summaryRecordButton')}
@@ -96,7 +96,7 @@ function Field({
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="min-h-[52px] w-full rounded-2xl border border-white/70 bg-white/50 px-5 text-base text-slate-900 placeholder:text-slate-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl focus:border-indigo-300 focus:outline-none"
+            className="min-h-[52px] w-full rounded-2xl border border-ink-100 bg-white px-5 text-base text-ink-900 placeholder:text-ink-400 focus:border-leaf-500 focus:ring-2 focus:ring-leaf-200 focus:outline-none"
         />
     );
 }

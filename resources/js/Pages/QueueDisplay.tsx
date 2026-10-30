@@ -53,35 +53,35 @@ function QueueDisplayScreen() {
             <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
                 <SponsorLogos className="mt-10" />
 
-                <h1 className="font-display text-3xl font-black uppercase text-slate-900">{t('queueTabletTitle')}</h1>
-                <p className="max-w-xs text-sm text-slate-600">{t('queueTabletSubtitle')}</p>
+                <h1 className="font-display text-3xl font-black uppercase text-ink-900">{t('queueTabletTitle')}</h1>
+                <p className="max-w-xs text-sm text-ink-600">{t('queueTabletSubtitle')}</p>
 
-                <div className="rounded-3xl border border-white/70 bg-white/50 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.15)] backdrop-blur-xl">
+                <div className="rounded-3xl border border-ink-100 bg-white p-4 shadow-card">
                     <QrCodeImage value={joinUrl} />
                 </div>
 
-                <div className="w-full max-w-sm rounded-3xl border border-white/70 bg-white/50 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_30px_rgba(99,102,241,0.12)] backdrop-blur-xl">
-                    <p className="mb-3 flex items-center justify-center gap-1.5 font-display text-xs font-bold uppercase tracking-widest text-indigo-600">
+                <div className="w-full max-w-sm rounded-3xl border border-ink-100 bg-white p-5 shadow-card">
+                    <p className="mb-3 flex items-center justify-center gap-1.5 font-display text-xs font-bold uppercase tracking-widest text-leaf-800">
                         <Users className="h-3.5 w-3.5" /> {t('queueNowServingLabel')}
                     </p>
 
                     {state?.current ? (
-                        <div className="mb-4 rounded-2xl bg-gradient-to-b from-indigo-400 to-violet-600 px-6 py-4 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+                        <div className="mb-4 rounded-2xl bg-leaf-500 px-6 py-4 text-ink-900">
                             <span className="font-display text-4xl font-black">#{state.current.number}</span>
-                            {state.current.visitor_name && <p className="mt-1 text-sm text-white/90">{state.current.visitor_name}</p>}
+                            {state.current.visitor_name && <p className="mt-1 text-sm text-ink-800">{state.current.visitor_name}</p>}
                         </div>
                     ) : (
-                        <p className="mb-4 text-sm text-slate-500">{state ? t('queueNoOneServingLabel') : t('loadingLabel')}</p>
+                        <p className="mb-4 text-sm text-ink-500">{state ? t('queueNoOneServingLabel') : t('loadingLabel')}</p>
                     )}
 
-                    <p className="mb-2 font-display text-xs font-bold uppercase tracking-widest text-indigo-600">{t('queueUpNextLabel')}</p>
-                    {state && state.waiting.length === 0 && <p className="text-sm text-slate-500">{t('queueEmptyLabel')}</p>}
+                    <p className="mb-2 font-display text-xs font-bold uppercase tracking-widest text-leaf-800">{t('queueUpNextLabel')}</p>
+                    {state && state.waiting.length === 0 && <p className="text-sm text-ink-500">{t('queueEmptyLabel')}</p>}
                     {state && state.waiting.length > 0 && (
                         <div className="flex flex-wrap justify-center gap-2">
                             {state.waiting.map((ticket) => (
                                 <span
                                     key={ticket.id}
-                                    className="rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1 font-display text-sm font-bold text-indigo-700"
+                                    className="rounded-full border border-leaf-200 bg-leaf-50 px-3 py-1 font-display text-sm font-bold text-leaf-800"
                                 >
                                     #{ticket.number}
                                 </span>

@@ -71,51 +71,51 @@ function QueueTicketScreen({ initialTicket }: { initialTicket: TicketProp }) {
             </div>
 
             <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
-                <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">{t('yourTicketNumber')}</p>
+                <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">{t('yourTicketNumber')}</p>
 
-                <div className="rounded-3xl border border-white/70 bg-white/50 px-12 py-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
-                    <span className="font-display text-7xl font-black text-indigo-600 drop-shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+                <div className="rounded-3xl border border-ink-100 bg-white px-12 py-8 shadow-card">
+                    <span className="font-display text-7xl font-black text-citrus-600">
                         #{initialTicket.number}
                     </span>
                 </div>
 
                 {status === 'waiting' && (
                     <>
-                        <Clock className="h-10 w-10 text-indigo-500" strokeWidth={1.5} />
-                        <p className="max-w-xs text-slate-700">{t('queueStatusWaiting')}</p>
+                        <Clock className="h-10 w-10 text-leaf-700" strokeWidth={1.5} />
+                        <p className="max-w-xs text-ink-700">{t('queueStatusWaiting')}</p>
                         {nowServing !== null && (
-                            <p className="font-display text-sm font-bold text-indigo-600">{t('queueNowServingLine', { number: nowServing })}</p>
+                            <p className="font-display text-sm font-bold text-leaf-800">{t('queueNowServingLine', { number: nowServing })}</p>
                         )}
                     </>
                 )}
 
                 {status === 'called' && (
                     <>
-                        <Sparkles className="h-12 w-12 animate-bounce text-indigo-500" strokeWidth={1.5} />
-                        <h1 className="font-display text-3xl font-black uppercase text-slate-900">{t('queueYourTurnTitle')}</h1>
-                        <p className="max-w-xs text-slate-700">{t('queueYourTurnBody')}</p>
+                        <Sparkles className="h-12 w-12 animate-bounce text-citrus-500" strokeWidth={1.5} />
+                        <h1 className="font-display text-3xl font-black uppercase text-ink-900">{t('queueYourTurnTitle')}</h1>
+                        <p className="max-w-xs text-ink-700">{t('queueYourTurnBody')}</p>
                     </>
                 )}
 
                 {status === 'serving' && (
                     <>
-                        <PartyPopper className="h-12 w-12 text-indigo-500" strokeWidth={1.5} />
-                        <p className="max-w-xs text-slate-700">{t('queueNowPlaying')}</p>
+                        <PartyPopper className="h-12 w-12 text-citrus-500" strokeWidth={1.5} />
+                        <p className="max-w-xs text-ink-700">{t('queueNowPlaying')}</p>
                     </>
                 )}
 
                 {status === 'done' && (
                     <>
-                        <PartyPopper className="h-12 w-12 text-indigo-500" strokeWidth={1.5} />
-                        <p className="max-w-xs text-slate-700">{t('queueThanksPlayed')}</p>
+                        <PartyPopper className="h-12 w-12 text-citrus-500" strokeWidth={1.5} />
+                        <p className="max-w-xs text-ink-700">{t('queueThanksPlayed')}</p>
                     </>
                 )}
 
                 {status === 'skipped' && (
                     <>
                         <XCircle className="h-12 w-12 text-rose-500" strokeWidth={1.5} />
-                        <h1 className="font-display text-xl font-black uppercase text-slate-900">{t('queueMissedTurnTitle')}</h1>
-                        <p className="max-w-xs text-slate-700">{t('queueMissedTurnBody')}</p>
+                        <h1 className="font-display text-xl font-black uppercase text-ink-900">{t('queueMissedTurnTitle')}</h1>
+                        <p className="max-w-xs text-ink-700">{t('queueMissedTurnBody')}</p>
                         <TouchButton onClick={() => (window.location.href = '/queue/join')}>{t('queueTakeNewTicket')}</TouchButton>
                     </>
                 )}

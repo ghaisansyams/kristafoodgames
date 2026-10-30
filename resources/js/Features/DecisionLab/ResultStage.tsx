@@ -37,20 +37,20 @@ export default function ResultStage({
 
     return (
         <div className="mx-auto w-full max-w-4xl">
-            <p className="mb-2 text-center font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">
+            <p className="mb-2 text-center font-display text-sm font-semibold uppercase tracking-widest text-leaf-800">
                 {t('resultEyebrow')}
             </p>
-            <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-slate-900">{t('resultProductTitle')}</h2>
+            <h2 className="mb-8 text-center font-display text-3xl font-black uppercase text-ink-900">{t('resultProductTitle')}</h2>
 
-            <div className="flex flex-col items-center justify-center gap-6 rounded-3xl border border-white/70 bg-white/60 p-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
+            <div className="flex flex-col items-center justify-center gap-6 rounded-3xl border border-ink-100 bg-white p-8 text-center shadow-card">
                 <div className="flex w-full flex-wrap items-center justify-center gap-8">
                     {result.product.logos.map((logo) => (
                         <img key={logo} src={logo} alt={result.product.name} className={`max-h-44 object-contain ${result.product.logos.length === 1 ? 'max-w-[24rem]' : 'max-w-[14rem]'}`} />
                     ))}
                 </div>
                 <div>
-                    <p className="font-display text-2xl font-black text-slate-900">{result.product.name}</p>
-                    <p className="mt-1 text-lg text-slate-600">{result.product.description}</p>
+                    <p className="font-display text-2xl font-black text-ink-900">{result.product.name}</p>
+                    <p className="mt-1 text-lg text-ink-600">{result.product.description}</p>
                 </div>
             </div>
 
@@ -59,15 +59,15 @@ export default function ResultStage({
             )}
 
             {result.alternatives.length > 0 && (
-                <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
-                    <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">{t('alsoConsider')}</p>
+                <div className="mt-6 rounded-2xl border border-ink-100 bg-white p-6">
+                    <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-leaf-800">{t('alsoConsider')}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {result.alternatives.map((alternative) => (
-                            <div key={alternative.slug} className="flex items-center gap-4 rounded-xl bg-white/70 p-4">
+                            <div key={alternative.slug} className="flex items-center gap-4 rounded-xl bg-white p-4">
                                 <img src={alternative.logos[0]} alt="" className="h-12 w-20 shrink-0 object-contain" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-bold text-slate-900">{alternative.name}</p>
-                                    <p className="text-sm text-slate-600">{alternative.description}</p>
+                                    <p className="font-bold text-ink-900">{alternative.name}</p>
+                                    <p className="text-sm text-ink-600">{alternative.description}</p>
                                 </div>
                             </div>
                         ))}
@@ -76,8 +76,8 @@ export default function ResultStage({
             )}
 
             {showEmailForm && !emailSent ? (
-                <form onSubmit={submitEmail} className="mt-8 rounded-2xl border border-white/70 bg-white/50 p-5 backdrop-blur-xl">
-                    <p className="mb-3 text-sm font-semibold text-slate-600">{t('emailFormPrompt')}</p>
+                <form onSubmit={submitEmail} className="mt-8 rounded-2xl border border-ink-100 bg-white p-5">
+                    <p className="mb-3 text-sm font-semibold text-ink-600">{t('emailFormPrompt')}</p>
                     <div className="flex flex-col gap-3 sm:flex-row">
                         <input
                             type="email"
@@ -86,7 +86,7 @@ export default function ResultStage({
                             placeholder="you@company.com"
                             value={emailValue}
                             onChange={(e) => setEmailValue(e.target.value)}
-                            className="min-h-[56px] flex-1 rounded-2xl border border-white/70 bg-white/60 px-5 text-base text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none"
+                            className="min-h-[56px] flex-1 rounded-2xl border border-ink-100 bg-white px-5 text-base text-ink-900 placeholder:text-ink-400 focus:border-leaf-500 focus:ring-2 focus:ring-leaf-200 focus:outline-none"
                         />
                         <TouchButton type="submit" variant="secondary" disabled={sendingEmail} className="sm:w-auto">
                             {sendingEmail ? t('sending') : t('send')}
@@ -110,10 +110,10 @@ export default function ResultStage({
                 </div>
             )}
 
-            {emailError && <p className="mt-3 text-center text-sm text-red-500">{emailError}</p>}
+            {emailError && <p className="mt-3 text-center text-sm text-red-600">{emailError}</p>}
 
             <div className="mt-6 text-center">
-                <button onClick={onBack} className="text-slate-500 underline hover:text-slate-800">
+                <button onClick={onBack} className="text-ink-500 underline hover:text-ink-800">
                     {t('chooseAnotherGame')}
                 </button>
             </div>
@@ -123,11 +123,11 @@ export default function ResultStage({
 
 function ResultList({ title, items }: { title: string; items: string[] }) {
     return (
-        <div className="mt-6 rounded-2xl border border-white/70 bg-white/50 p-6 backdrop-blur-xl">
-            <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">{title}</p>
+        <div className="mt-6 rounded-2xl border border-ink-100 bg-white p-6">
+            <p className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-leaf-800">{title}</p>
             <div className="flex flex-wrap gap-2">
                 {items.map((item) => (
-                    <span key={item} className="rounded-full bg-indigo-100/80 px-4 py-2 text-sm font-semibold text-indigo-700">
+                    <span key={item} className="rounded-full bg-leaf-100 px-4 py-2 text-sm font-semibold text-leaf-800">
                         ✓ {item}
                     </span>
                 ))}

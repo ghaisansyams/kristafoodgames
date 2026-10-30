@@ -2,12 +2,14 @@ import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
+// Brand fills with dark ink text (the light green/orange can't carry white text legibly), and a
+// solid bottom "lip" that the button presses down into — a tactile cue on a touch screen.
 const variants: Record<Variant, string> = {
     primary:
-        'bg-gradient-to-b from-indigo-400 via-violet-500 to-purple-600 text-white border border-white/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_10px_30px_rgba(99,102,241,0.45)] hover:brightness-110 active:brightness-95',
+        'bg-leaf-500 text-ink-900 shadow-[0_6px_0_0_#6a8113] hover:bg-leaf-400 active:translate-y-1 active:shadow-[0_2px_0_0_#6a8113]',
     secondary:
-        'bg-gradient-to-b from-teal-300 via-emerald-400 to-teal-600 text-emerald-950 border border-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_30px_rgba(20,184,166,0.45)] hover:brightness-110 active:brightness-95',
-    ghost: 'bg-white/60 text-slate-700 backdrop-blur-xl hover:bg-white/80 active:bg-white/90 border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]',
+        'bg-citrus-500 text-ink-900 shadow-[0_6px_0_0_#a95f04] hover:bg-citrus-400 active:translate-y-1 active:shadow-[0_2px_0_0_#a95f04]',
+    ghost: 'border-2 border-ink-200 bg-white text-ink-700 shadow-[0_6px_0_0_#dadfd2] hover:bg-ink-50 active:translate-y-1 active:shadow-[0_2px_0_0_#dadfd2]',
 };
 
 export default function TouchButton({
@@ -19,7 +21,7 @@ export default function TouchButton({
     return (
         <button
             {...props}
-            className={`min-h-[64px] rounded-full px-8 py-4 font-display text-xl font-bold uppercase tracking-wide transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none ${variants[variant]} ${className}`}
+            className={`min-h-[64px] rounded-full px-8 py-4 font-display text-xl uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0 ${variants[variant]} ${className}`}
         >
             {children}
         </button>

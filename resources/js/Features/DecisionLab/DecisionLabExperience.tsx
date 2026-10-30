@@ -268,9 +268,9 @@ export default function DecisionLabExperience({
                         >
                             {(option.icon || (ranked && rank !== -1)) && (
                                 <div className="flex w-full items-center justify-between">
-                                    {option.icon ? <Icon name={option.icon} className="h-9 w-9 text-indigo-500" /> : <span />}
+                                    {option.icon ? <Icon name={option.icon} className="h-9 w-9 text-leaf-700" /> : <span />}
                                     {ranked && rank !== -1 && (
-                                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-b from-indigo-400 to-violet-600 text-sm font-bold text-white shadow-[0_0_10px_rgba(99,102,241,0.6)]">
+                                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-leaf-500 text-sm font-bold text-ink-900">
                                             {rank + 1}
                                         </span>
                                     )}
@@ -289,14 +289,14 @@ export default function DecisionLabExperience({
 
         return withText.map((slug) => (
             <div key={slug} className="mt-4">
-                <p className="mb-2 text-sm font-semibold text-slate-600">{content!.options[slug].label}</p>
+                <p className="mb-2 text-sm font-semibold text-ink-600">{content!.options[slug].label}</p>
                 <textarea
                     rows={2}
                     maxLength={300}
                     value={notes[slug] ?? ''}
                     onChange={(e) => setNotes((prev) => ({ ...prev, [slug]: e.target.value }))}
                     placeholder={t('textFieldPlaceholder')}
-                    className="w-full rounded-2xl border border-white/70 bg-white/60 px-5 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none"
+                    className="w-full rounded-2xl border border-ink-100 bg-white px-5 py-3 text-base text-ink-900 placeholder:text-ink-400 focus:border-leaf-500 focus:ring-2 focus:ring-leaf-200 focus:outline-none"
                 />
             </div>
         ));
@@ -306,7 +306,7 @@ export default function DecisionLabExperience({
         return (
             <div className="flex min-h-screen flex-col items-center justify-center gap-4">
                 <DecisionLogo className="h-24 w-24" />
-                <p className="text-xl text-slate-600">{error ?? t('loadingExperience')}</p>
+                <p className="text-xl text-ink-600">{error ?? t('loadingExperience')}</p>
             </div>
         );
     }
@@ -320,14 +320,14 @@ export default function DecisionLabExperience({
             {stage !== 'result' && (
                 <button
                     onClick={onBack}
-                    className="mb-4 flex w-fit items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900"
+                    className="mb-4 flex w-fit items-center gap-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
                 >
                     <ArrowLeft className="h-4 w-4" /> {t('back')}
                 </button>
             )}
 
             {error && (
-                <p className="mb-4 rounded-xl border border-red-300/50 bg-red-50/80 px-4 py-3 text-center text-red-600 backdrop-blur-xl">
+                <p className="mb-4 rounded-xl border border-red-300/50 bg-red-50/80 px-4 py-3 text-center text-red-600">
                     {error}
                 </p>
             )}
@@ -335,10 +335,10 @@ export default function DecisionLabExperience({
             {(stage === 'journey' || stage === 'requirements') && <CountdownBar totalSeconds={180} dangerSeconds={25} />}
 
             {stage === 'role' && (
-                <div className="mx-auto w-full max-w-3xl rounded-3xl border border-white/70 bg-white/50 p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_40px_rgba(99,102,241,0.2)] backdrop-blur-xl">
+                <div className="mx-auto w-full max-w-3xl rounded-3xl border border-ink-100 bg-white p-10 text-center shadow-card">
                     <DecisionLogo className="mx-auto mb-4 h-24 w-24" />
-                    <h2 className="font-display text-3xl font-black uppercase text-slate-900">{t('roleTitle')}</h2>
-                    <p className="mt-2 text-slate-600">{t('roleSubtitle')}</p>
+                    <h2 className="font-display text-3xl font-black uppercase text-ink-900">{t('roleTitle')}</h2>
+                    <p className="mt-2 text-ink-600">{t('roleSubtitle')}</p>
                     <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <SelectCard
                             title={t('roleBrandOwner')}
@@ -346,7 +346,7 @@ export default function DecisionLabExperience({
                             selected={role === 'brand_owner'}
                             onClick={() => chooseRole('brand_owner')}
                         >
-                            <Icon name="store" className="h-10 w-10 text-indigo-500" />
+                            <Icon name="store" className="h-10 w-10 text-leaf-700" />
                         </SelectCard>
                         <SelectCard
                             title={t('roleConverter')}
@@ -354,7 +354,7 @@ export default function DecisionLabExperience({
                             selected={role === 'converter'}
                             onClick={() => chooseRole('converter')}
                         >
-                            <Icon name="factory" className="h-10 w-10 text-indigo-500" />
+                            <Icon name="factory" className="h-10 w-10 text-leaf-700" />
                         </SelectCard>
                     </div>
                 </div>
@@ -370,9 +370,9 @@ export default function DecisionLabExperience({
                     />
                     {renderOptionCards(stepOptions, stepSelection, (slug) => selectOption(step, slug), step.max !== undefined)}
                     {renderTextFields(stepSelection)}
-                    {submitting && <p className="mt-6 text-center font-semibold text-indigo-600">{t('findingProduct')}</p>}
+                    {submitting && <p className="mt-6 text-center font-semibold text-leaf-800">{t('findingProduct')}</p>}
                     <div className="mt-8 flex items-center justify-between gap-4">
-                        <TouchButton variant="secondary" onClick={handlePreviousStep}>
+                        <TouchButton variant="ghost" onClick={handlePreviousStep}>
                             {t('previousStep')}
                         </TouchButton>
                         {(step.mode === 'multi' || stepSelection.some((slug) => content.options[slug]?.text)) && (
@@ -396,12 +396,12 @@ export default function DecisionLabExperience({
                         title={t(stepKey('requirements'))}
                         subtitle={t(stepKey('requirements', '_q'))}
                     />
-                    <p className="mb-4 text-sm text-slate-500">{t('requirementsNote')}</p>
+                    <p className="mb-4 text-sm text-ink-500">{t('requirementsNote')}</p>
                     {renderOptionCards(journey.requirements, requirements, pickRequirement, false)}
                     {renderTextFields(requirements)}
-                    {submitting && <p className="mt-6 text-center font-semibold text-indigo-600">{t('findingProduct')}</p>}
+                    {submitting && <p className="mt-6 text-center font-semibold text-leaf-800">{t('findingProduct')}</p>}
                     <div className="mt-8 flex items-center justify-between gap-4">
-                        <TouchButton variant="secondary" onClick={handlePreviousStep}>
+                        <TouchButton variant="ghost" onClick={handlePreviousStep}>
                             {t('previousStep')}
                         </TouchButton>
                         {requirements.some((slug) => content.options[slug]?.text) && (

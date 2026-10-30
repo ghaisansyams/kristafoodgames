@@ -19,19 +19,15 @@ export default function StepHeader({
                 {Array.from({ length: total }, (_, i) => (
                     <div
                         key={i}
-                        className={`h-2 flex-1 rounded-full ${
-                            i < step
-                                ? 'bg-gradient-to-r from-indigo-400 to-violet-600 shadow-[0_0_8px_rgba(99,102,241,0.6)]'
-                                : 'bg-white/60'
-                        }`}
+                        className={`h-2.5 flex-1 rounded-full ${i < step ? 'bg-leaf-500' : 'bg-ink-200/70'}`}
                     />
                 ))}
             </div>
-            <p className="font-display text-sm font-semibold uppercase tracking-widest text-indigo-600">
+            <p className="font-display text-sm uppercase tracking-widest text-leaf-800">
                 {t('stepLabel', { step, total })}
             </p>
-            <h2 className="font-display text-3xl font-black text-slate-900">{title}</h2>
-            {subtitle && <p className="mt-1 text-slate-600">{subtitle}</p>}
+            <h2 className="font-display text-3xl text-ink-900">{title}</h2>
+            {subtitle && <p className="mt-1 text-lg text-ink-600">{subtitle}</p>}
         </div>
     );
 }
