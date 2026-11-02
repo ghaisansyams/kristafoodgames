@@ -36,8 +36,6 @@ export const SINAR_LOGOS: BrandLogo[] = [
 
 export const ALL_LOGOS: BrandLogo[] = [...FOOPAK_LOGOS, ...ENZA_LOGOS, ...SINAR_LOGOS];
 
-export const PAIR_COUNT = 8;
-
 function shuffle<T>(items: T[]): T[] {
     const copy = [...items];
     for (let i = copy.length - 1; i > 0; i--) {
@@ -47,18 +45,9 @@ function shuffle<T>(items: T[]): T[] {
     return copy;
 }
 
-// How many marks of each family one round deals, {@link PAIR_COUNT} in all. Most Foopak marks
-// share the same wordmark and differ only in a small tag, so Enza and Sinar marks are mixed in
-// to keep the board from being a wall of near-identical cards.
-const ROUND_MIX: [BrandLogo[], number][] = [
-    [FOOPAK_LOGOS, 4],
-    [ENZA_LOGOS, 2],
-    [SINAR_LOGOS, 2],
-];
-
-/** The logos for one round. */
+/** Every logo is on the table each round — one pair per logo, 14 pairs in all. */
 export function pickRoundLogos(): BrandLogo[] {
-    return ROUND_MIX.flatMap(([family, count]) => shuffle(family).slice(0, count));
+    return ALL_LOGOS;
 }
 
 /** A shuffled deck holding two cards (one pair) per logo. */

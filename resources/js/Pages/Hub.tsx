@@ -241,8 +241,8 @@ function HubScreen() {
             {screen === 'choose' && (
                 <div className="flex min-h-screen flex-col items-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
-                    <h1 className="pt-4 font-display text-3xl font-black uppercase text-ink-900">{t('chooseEyebrow')}</h1>
-                    <div className="flex w-full max-w-xl flex-wrap justify-center gap-5">
+                    <h1 className="pt-4 font-display text-3xl font-black uppercase text-ink-900 landscape:text-4xl">{t('chooseEyebrow')}</h1>
+                    <div className="flex w-full max-w-xl flex-wrap justify-center gap-5 landscape:max-w-4xl landscape:flex-nowrap landscape:gap-8">
                         {GAMES.map((game) => (
                             <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
                         ))}
@@ -324,13 +324,13 @@ function GameCard({
     return (
         <button
             onClick={onClick}
-            className="group flex min-h-[250px] w-[47%] min-w-[150px] flex-col items-center justify-center gap-3 rounded-[2rem] border-2 border-transparent bg-white p-6 text-center shadow-card-lg transition hover:border-leaf-300 hover:bg-leaf-50 active:scale-95"
+            className="group flex min-h-[250px] w-[47%] min-w-[150px] landscape:min-h-[340px] landscape:w-1/2 flex-col items-center justify-center gap-3 rounded-[2rem] border-2 border-transparent bg-white p-6 text-center shadow-card-lg transition hover:border-leaf-300 hover:bg-leaf-50 active:scale-95"
         >
-            <span className="mb-1 flex h-24 w-24 items-center justify-center rounded-3xl border border-leaf-200 bg-leaf-100 transition group-hover:bg-white">
-                <Logo className="h-16 w-16" />
+            <span className="mb-1 flex h-24 w-24 items-center justify-center rounded-3xl landscape:h-32 landscape:w-32 border border-leaf-200 bg-leaf-100 transition group-hover:bg-white">
+                <Logo className="h-16 w-16 landscape:h-20 landscape:w-20" />
             </span>
-            <span className="font-display text-xl font-black uppercase leading-tight text-ink-900">{game.title}</span>
-            <span className="text-sm text-ink-600">{game.tagline}</span>
+            <span className="font-display text-xl font-black uppercase leading-tight text-ink-900 landscape:text-3xl">{game.title}</span>
+            <span className="text-sm text-ink-600 landscape:text-lg">{game.tagline}</span>
         </button>
     );
 }

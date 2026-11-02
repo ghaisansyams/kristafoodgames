@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Check, Clock, Leaf, Star } from 'lucide-react';
-import CountdownBar from '@/Components/Kiosk/CountdownBar';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { MemoryLogo } from '@/Components/Kiosk/GameLogos';
 import { MiniGameApi } from '@/lib/api';
 import { dealDeck, pickRoundLogos, ALL_LOGOS, type BrandLogo } from '@/lib/brandLogos';
 import { useLocale } from '@/lib/i18n';
 
-const TIME_LIMIT_SECONDS = 90;
+// 2 minutes 30 seconds for 14 pairs.
+const TIME_LIMIT_SECONDS = 150;
+const DANGER_SECONDS = 20;
 const MISMATCH_DELAY_MS = 800;
 
-// Moves needed for a 3-star / 2-star finish; eight pairs can't be cleared in fewer than eight.
-const THREE_STAR_MOVES = 12;
-const TWO_STAR_MOVES = 18;
+// Moves for a 3-star / 2-star finish; fourteen pairs can't be cleared in fewer than fourteen.
+const THREE_STAR_MOVES = 22;
+const TWO_STAR_MOVES = 32;
 
 export type MemoryAttempt = { won: boolean; moves: number; seconds: number; found: number; total: number };
 
@@ -23,6 +24,11 @@ function newDeck(): Card[] {
     return dealDeck(pickRoundLogos()).map((card) => ({ ...card, flipped: false, matched: false }));
 }
 
+/**
+ * Landscape-first: on a wide screen the page is exactly one viewport tall, with a slim header
+ * of stat tiles above a 7x4 board whose cards stretch to fill the remaining height. In
+ * portrait (a phone) the board falls back to 4 columns of fixed-ratio cards and the page scrolls.
+ */
 export default function MemoryMatchExperience({
     visitorId,
     onBack,
@@ -42,8 +48,8 @@ export default function MemoryMatchExperience({
     const [round, setRound] = useState(0);
     const startedAt = useRef(Date.now());
 
-    // The countdown bar only reads `onExpire` once, when it mounts, so the expiry handler goes
-    // through this ref to see the cards and moves as they are when time actually runs out.
+    // The timer only reads its expiry handler when it mounts, so the handler goes through this
+    // ref to see the cards and moves as they are when time actually runs out.
     const latest = useRef({ cards, moves, outcome });
     latest.current = { cards, moves, outcome };
 
@@ -68,7 +74,7 @@ export default function MemoryMatchExperience({
 
     function finish(result: Outcome, finalMoves: number, found: number) {
         if (latest.current.outcome) return;
-        const result_: MemoryAttempt = {
+        const finished: MemoryAttempt = {
             won: result === 'win',
             moves: finalMoves,
             seconds: Math.round((Date.now() - startedAt.current) / 1000),
@@ -77,13 +83,13 @@ export default function MemoryMatchExperience({
         };
         latest.current.outcome = result;
         setOutcome(result);
-        setAttempt(result_);
-        MiniGameApi.record('memory_match', result_.won, visitorId, {
-            moves: result_.moves,
-            seconds: result_.seconds,
+        setAttempt(finished);
+        MiniGameApi.record('memory_match', finished.won, visitorId, {
+            moves: finished.moves,
+            seconds: finished.seconds,
             pairs_found: found,
         });
-        onResult?.(result_);
+        onResult?.(finished);
     }
 
     function expire() {
@@ -130,41 +136,35 @@ export default function MemoryMatchExperience({
     }
 
     return (
-        <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center px-5 py-8">
-            <button
-                onClick={onBack}
-                className="mb-2 flex w-fit items-center gap-2 self-start text-sm font-semibold text-ink-600 hover:text-ink-900"
-            >
-                <ArrowLeft className="h-4 w-4" /> {t('back')}
-            </button>
+        <div className="mx-auto flex min-h-screen w-full max-w-[1760px] flex-col gap-3 px-4 py-4 landscape:h-screen landscape:gap-4 landscape:px-8 landscape:py-5">
+            <header className="flex flex-wrap items-center gap-x-6 gap-y-3 landscape:flex-nowrap">
+                <button
+                    onClick={onBack}
+                    className="flex min-h-[48px] shrink-0 items-center gap-2 rounded-full border-2 border-ink-200 bg-white px-5 font-display text-sm font-bold uppercase tracking-wide text-ink-700 shadow-[0_4px_0_0_#dadfd2] transition hover:bg-ink-50 active:translate-y-0.5 active:shadow-[0_2px_0_0_#dadfd2]"
+                >
+                    <ArrowLeft className="h-4 w-4" strokeWidth={3} /> {t('back')}
+                </button>
 
-            <MemoryLogo className="mb-1 h-16 w-16" />
-            <h2 className="font-display text-3xl font-black uppercase text-ink-900">{t('gameMemoryTitle')}</h2>
-            <p className="mb-5 mt-1 max-w-sm text-center text-ink-600">{t('memoryInstructions')}</p>
-
-            <div className="kiosk-card mb-5 w-full px-5 pb-1 pt-4">
-                {outcome === null ? (
-                    <CountdownBar key={round} totalSeconds={TIME_LIMIT_SECONDS} dangerSeconds={15} onExpire={expire} />
-                ) : (
-                    <div className="mb-6 h-[42px]" />
-                )}
-                <div className="mb-4 flex items-center justify-between gap-4">
-                    <Stat label={t('memoryMoves')} value={moves} />
-                    <div className="flex flex-1 justify-center gap-1.5" aria-hidden>
-                        {Array.from({ length: totalPairs }, (_, i) => (
-                            <span
-                                key={i}
-                                className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${
-                                    i < pairsFound ? 'bg-leaf-500' : 'bg-ink-200'
-                                }`}
-                            />
-                        ))}
+                <div className="flex min-w-0 flex-1 items-center gap-4">
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-100 landscape:h-16 landscape:w-16">
+                        <MemoryLogo className="h-10 w-10 landscape:h-12 landscape:w-12" />
+                    </span>
+                    <div className="min-w-0">
+                        <h2 className="font-display text-2xl font-black uppercase leading-none text-ink-900 landscape:text-3xl">
+                            {t('gameMemoryTitle')}
+                        </h2>
+                        <p className="mt-1 text-sm leading-snug text-ink-600 landscape:text-base">{t('memoryInstructions')}</p>
                     </div>
-                    <Stat label={t('memoryPairs')} value={`${pairsFound}/${totalPairs}`} align="right" />
                 </div>
-            </div>
 
-            <div className="grid w-full grid-cols-4 gap-2.5 [perspective:1200px] sm:gap-3">
+                <div className="flex w-full gap-3 landscape:w-auto">
+                    <TimerTile key={round} totalSeconds={TIME_LIMIT_SECONDS} running={outcome === null} onExpire={expire} />
+                    <StatTile label={t('memoryMoves')} value={moves} />
+                    <StatTile label={t('memoryPairs')} value={`${pairsFound}/${totalPairs}`} progress={pairsFound / totalPairs} />
+                </div>
+            </header>
+
+            <div className="grid min-h-0 w-full grid-cols-4 gap-2.5 [perspective:1600px] landscape:flex-1 landscape:grid-cols-7 landscape:grid-rows-4 landscape:gap-3">
                 {cards.map((card, index) => (
                     <MemoryCard key={`${round}-${card.key}`} card={card} index={index} onFlip={() => flip(card.key)} />
                 ))}
@@ -175,11 +175,60 @@ export default function MemoryMatchExperience({
     );
 }
 
-function Stat({ label, value, align = 'left' }: { label: string; value: string | number; align?: 'left' | 'right' }) {
+function StatTile({ label, value, progress }: { label: string; value: string | number; progress?: number }) {
     return (
-        <div className={`min-w-[4.5rem] ${align === 'right' ? 'text-right' : ''}`}>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-widest text-ink-500">{label}</p>
-            <p className="font-display text-2xl font-black tabular-nums leading-none text-leaf-800">{value}</p>
+        <div className="kiosk-card relative min-w-[6.5rem] flex-1 overflow-hidden px-4 pb-3 pt-2.5 landscape:min-w-[8.5rem] landscape:flex-none">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-ink-500">{label}</p>
+            <p className="font-display text-3xl font-black tabular-nums leading-tight text-leaf-800 landscape:text-4xl">{value}</p>
+            {progress !== undefined && (
+                <span className="absolute inset-x-0 bottom-0 h-1.5 bg-ink-100">
+                    <span
+                        className="block h-full bg-leaf-500 transition-[width] duration-500 ease-out"
+                        style={{ width: `${progress * 100}%` }}
+                    />
+                </span>
+            )}
+        </div>
+    );
+}
+
+/** The countdown: big digits with a bar along the tile's bottom edge that drains and turns red. */
+function TimerTile({ totalSeconds, running, onExpire }: { totalSeconds: number; running: boolean; onExpire: () => void }) {
+    const { t } = useLocale();
+    const [remaining, setRemaining] = useState(totalSeconds);
+    const onExpireRef = useRef(onExpire);
+    onExpireRef.current = onExpire;
+
+    useEffect(() => {
+        if (!running) return;
+        const interval = window.setInterval(() => setRemaining((prev) => Math.max(0, prev - 1)), 1000);
+        return () => window.clearInterval(interval);
+    }, [running]);
+
+    useEffect(() => {
+        if (remaining === 0 && running) onExpireRef.current();
+    }, [remaining, running]);
+
+    const danger = remaining <= DANGER_SECONDS;
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+
+    return (
+        <div className="kiosk-card relative min-w-[7.5rem] flex-1 overflow-hidden px-4 pb-3 pt-2.5 landscape:min-w-[9.5rem] landscape:flex-none">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-ink-500">{t('timeRemaining')}</p>
+            <p
+                className={`font-display text-3xl font-black tabular-nums leading-tight landscape:text-4xl ${
+                    danger ? 'animate-pulse text-red-600' : 'text-citrus-600'
+                }`}
+            >
+                {minutes}:{seconds.toString().padStart(2, '0')}
+            </p>
+            <span className="absolute inset-x-0 bottom-0 h-1.5 bg-ink-100">
+                <span
+                    className={`block h-full transition-[width] duration-1000 ease-linear ${danger ? 'bg-red-500' : 'bg-citrus-500'}`}
+                    style={{ width: `${(remaining / totalSeconds) * 100}%` }}
+                />
+            </span>
         </div>
     );
 }
@@ -193,8 +242,8 @@ function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip
             onClick={onFlip}
             disabled={revealed}
             aria-label={revealed ? card.logo.label : undefined}
-            style={{ animationDelay: `${index * 35}ms` }}
-            className="memory-deal relative aspect-[4/5] touch-manipulation sm:aspect-[5/4] rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 active:scale-[0.96] motion-safe:transition-transform"
+            style={{ animationDelay: `${index * 25}ms` }}
+            className="memory-deal relative aspect-[4/5] touch-manipulation rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 active:scale-[0.97] motion-safe:transition-transform landscape:aspect-auto landscape:h-full landscape:min-h-0"
         >
             <span
                 className={`absolute inset-0 transition-transform duration-500 ease-out [transform-style:preserve-3d] motion-reduce:duration-0 ${
@@ -204,14 +253,14 @@ function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip
                 {/* Face-down: the Foopak leaf-green back with a stitched inner border. */}
                 <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-leaf-400 via-leaf-500 to-leaf-600 shadow-[0_5px_0_0_#6a8113] [backface-visibility:hidden]">
                     <span className="absolute inset-1.5 rounded-xl border-2 border-dashed border-white/50" />
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/25">
-                        <Leaf className="h-6 w-6 text-white" strokeWidth={2.2} />
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/25 landscape:h-14 landscape:w-14">
+                        <Leaf className="h-6 w-6 text-white landscape:h-8 landscape:w-8" strokeWidth={2.2} />
                     </span>
                 </span>
 
                 {/* Face-up: the logo on white; a matched pair gets a green frame and a check. */}
                 <span
-                    className={`absolute inset-0 flex items-center justify-center rounded-2xl border-2 p-2 sm:p-3 [backface-visibility:hidden] [transform:rotateY(180deg)] ${
+                    className={`absolute inset-0 flex items-center justify-center rounded-2xl border-2 p-2 [backface-visibility:hidden] [transform:rotateY(180deg)] landscape:p-4 ${
                         card.matched
                             ? 'memory-match border-leaf-500 bg-leaf-50 shadow-[0_5px_0_0_#a3c226]'
                             : 'border-ink-100 bg-white shadow-[0_5px_0_0_#dadfd2]'
@@ -224,7 +273,7 @@ function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip
                         className={`max-h-full max-w-full select-none object-contain ${card.logo.raise ? '-translate-y-[14%]' : ''}`}
                     />
                     {card.matched && (
-                        <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-ink-900 shadow">
+                        <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-ink-900 shadow landscape:h-7 landscape:w-7">
                             <Check className="h-4 w-4" strokeWidth={3.5} />
                         </span>
                     )}
@@ -251,13 +300,13 @@ function ResultOverlay({
 
     return (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink-900/55 px-6 backdrop-blur-sm" role="dialog" aria-modal>
-            <div className="memory-result kiosk-card w-full max-w-sm p-8 text-center">
+            <div className="memory-result kiosk-card w-full max-w-md p-8 text-center landscape:p-10">
                 {won ? (
                     <div className="mb-3 flex justify-center gap-1.5">
                         {[1, 2, 3].map((n) => (
                             <Star
                                 key={n}
-                                className={`h-11 w-11 ${n <= stars ? 'fill-citrus-500 text-citrus-500' : 'fill-ink-100 text-ink-200'}`}
+                                className={`h-12 w-12 ${n <= stars ? 'fill-citrus-500 text-citrus-500' : 'fill-ink-100 text-ink-200'}`}
                                 strokeWidth={1.5}
                             />
                         ))}
@@ -270,10 +319,10 @@ function ResultOverlay({
                 <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-leaf-800">
                     {won ? t('memoryWinEyebrow') : t('memoryLoseEyebrow')}
                 </p>
-                <h3 className="mt-1 font-display text-3xl font-black uppercase text-ink-900">
+                <h3 className="mt-1 font-display text-4xl font-black uppercase text-ink-900">
                     {won ? t('memoryWinTitle') : t('memoryLoseTitle')}
                 </h3>
-                <p className="mb-6 mt-2 text-ink-600">
+                <p className="mb-6 mt-2 text-lg text-ink-600">
                     {won
                         ? t('memoryWinBody', { moves: attempt.moves, seconds: attempt.seconds })
                         : t('memoryLoseBody', { found: attempt.found, total: attempt.total })}
