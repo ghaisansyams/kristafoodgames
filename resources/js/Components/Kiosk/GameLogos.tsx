@@ -18,6 +18,41 @@ export function MemoryLogo({ className = 'h-10 w-10' }: { className?: string }) 
     );
 }
 
+export function WheelLogo({ className = 'h-10 w-10' }: { className?: string }) {
+    const colors = ['#a3c226', '#ffffff', '#f39308', '#ebf2c9', '#a3c226', '#ffffff', '#f39308', '#ebf2c9'];
+    return (
+        <svg viewBox="0 0 48 48" className={className}>
+            <g style={{ transformOrigin: '24px 26px', animation: 'logo-spin 6s linear infinite' }}>
+                {colors.map((color, i) => {
+                    const a0 = (i * 45 * Math.PI) / 180;
+                    const a1 = ((i + 1) * 45 * Math.PI) / 180;
+                    const d = `M24 26 L${24 + 18 * Math.sin(a0)} ${26 - 18 * Math.cos(a0)} A18 18 0 0 1 ${24 + 18 * Math.sin(a1)} ${26 - 18 * Math.cos(a1)} Z`;
+                    return <path key={i} d={d} fill={color} stroke="#6a8113" strokeWidth="0.8" />;
+                })}
+            </g>
+            <circle cx="24" cy="26" r="18" fill="none" stroke="#6a8113" strokeWidth="2" />
+            <circle cx="24" cy="26" r="3.5" fill="#ffffff" stroke="#6a8113" strokeWidth="1.5" />
+            <path d="M24 12 L20 3 H28 Z" fill="#f39308" stroke="#7e4706" strokeWidth="1.2" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+export function ConveyorLogo({ className = 'h-10 w-10' }: { className?: string }) {
+    return (
+        <svg viewBox="0 0 48 48" className={className}>
+            <g style={{ animation: 'logo-slide 2.4s ease-in-out infinite' }}>
+                <rect x="8" y="16" width="13" height="12" rx="2" fill="#f39308" stroke="#7e4706" strokeWidth="1.2" />
+                <rect x="25" y="13" width="14" height="15" rx="2" fill="#a3c226" stroke="#6a8113" strokeWidth="1.2" />
+            </g>
+            <rect x="3" y="29" width="42" height="9" rx="4.5" fill="#3f4a33" />
+            {[8, 18, 30, 40].map((cx) => (
+                <circle key={cx} cx={cx} cy="33.5" r="2.4" fill="#dadfd2" />
+            ))}
+            <path d="M24 42 v4 M20 44 l4 3 l4 -3" stroke="#6a8113" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        </svg>
+    );
+}
+
 export function StopwatchLogo({ className = 'h-10 w-10' }: { className?: string }) {
     return (
         <svg viewBox="0 0 48 48" className={className}>
@@ -54,6 +89,10 @@ export function GameLogoStyles() {
             @keyframes logo-tilt {
                 0%, 100% { transform: rotate(-4deg); }
                 50% { transform: rotate(4deg); }
+            }
+            @keyframes logo-slide {
+                0%, 100% { transform: translateX(-2px); }
+                50% { transform: translateX(3px); }
             }
             @keyframes logo-fade {
                 0%, 100% { opacity: 0.3; }

@@ -74,3 +74,78 @@
         animation: memory-rise 0.35s ease-out both;
     }
 }
+
+/* Shared game effects: confetti behind a winning dialog, the moving conveyor belt surface, a
+   short shake for a wrong answer, and the wheel's rim lights blinking while it spins. */
+@keyframes game-confetti {
+    from {
+        transform: translateY(-5vh) rotate(0deg);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(105vh) rotate(720deg);
+        opacity: 0.6;
+    }
+}
+
+@keyframes belt-move {
+    to {
+        background-position-x: 56px;
+    }
+}
+
+@keyframes game-shake {
+    20%,
+    60% {
+        transform: translateX(-6px);
+    }
+    40%,
+    80% {
+        transform: translateX(6px);
+    }
+}
+
+@keyframes rim-blink {
+    50% {
+        opacity: 0.25;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .game-confetti {
+        animation: game-confetti 2.8s linear infinite both;
+    }
+
+    .belt-running {
+        animation: belt-move 0.45s linear infinite;
+    }
+
+    .game-shake {
+        animation: game-shake 0.35s ease-in-out;
+    }
+
+    .rim-blink {
+        animation: rim-blink 0.5s steps(1) infinite;
+    }
+}
+
+@keyframes combo-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .combo-pop {
+        animation: combo-pop 0.35s ease-out both;
+    }
+}

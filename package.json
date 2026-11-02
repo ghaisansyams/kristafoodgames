@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "tsc && vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "build:preview": "vite build --config vite.preview.config.js && mkdir -p dist-preview/images && cp -R public/fonts dist-preview/ && cp -R public/images/sponsors public/images/products dist-preview/images/"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",

@@ -6,6 +6,7 @@ import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
 import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
 import SponsorLogos from '@/Components/Kiosk/SponsorLogos';
 import TouchButton from '@/Components/Kiosk/TouchButton';
+import GameCard, { type LogoComponent } from '@/Components/Kiosk/GameCard';
 import LeaderboardOptIn from '@/Components/Kiosk/LeaderboardOptIn';
 import { MemoryLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { useIdleReset } from '@/lib/useIdleReset';
@@ -27,8 +28,6 @@ const CALL_GRACE_SECONDS = 45;
 // should be called — there's no WebSocket push here (Vercel's serverless functions can't host
 // one), so this poll is what actually moves the queue forward.
 const IDLE_POLL_MS = 4000;
-
-type LogoComponent = (props: { className?: string }) => JSX.Element;
 
 export default function Hub() {
     return (
@@ -244,7 +243,7 @@ function HubScreen() {
                     <h1 className="pt-4 font-display text-3xl font-black uppercase text-ink-900 landscape:text-4xl">{t('chooseEyebrow')}</h1>
                     <div className="flex w-full max-w-xl flex-wrap justify-center gap-5 landscape:max-w-4xl landscape:flex-nowrap landscape:gap-8">
                         {GAMES.map((game) => (
-                            <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
+                            <GameCard key={game.screen} title={game.title} tagline={game.tagline} Logo={game.Logo} onClick={() => setScreen(game.screen)} />
                         ))}
                     </div>
                     <button onClick={finishVisit} className="mt-2 text-sm text-ink-500 underline">
@@ -310,27 +309,5 @@ function HubScreen() {
                 </>
             )}
         </CosmicBackground>
-    );
-}
-
-function GameCard({
-    game,
-    onClick,
-}: {
-    game: { title: string; tagline: string; Logo: LogoComponent };
-    onClick: () => void;
-}) {
-    const { Logo } = game;
-    return (
-        <button
-            onClick={onClick}
-            className="group flex min-h-[250px] w-[47%] min-w-[150px] landscape:min-h-[340px] landscape:w-1/2 flex-col items-center justify-center gap-3 rounded-[2rem] border-2 border-transparent bg-white p-6 text-center shadow-card-lg transition hover:border-leaf-300 hover:bg-leaf-50 active:scale-95"
-        >
-            <span className="mb-1 flex h-24 w-24 items-center justify-center rounded-3xl landscape:h-32 landscape:w-32 border border-leaf-200 bg-leaf-100 transition group-hover:bg-white">
-                <Logo className="h-16 w-16 landscape:h-20 landscape:w-20" />
-            </span>
-            <span className="font-display text-xl font-black uppercase leading-tight text-ink-900 landscape:text-3xl">{game.title}</span>
-            <span className="text-sm text-ink-600 landscape:text-lg">{game.tagline}</span>
-        </button>
     );
 }

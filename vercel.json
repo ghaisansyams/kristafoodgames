@@ -8,6 +8,16 @@
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": { "service": "app" } }
-  ]
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "preview-wheel-conveyor": false
+    }
+  }
 }

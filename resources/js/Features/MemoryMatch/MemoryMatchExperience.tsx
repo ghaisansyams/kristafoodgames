@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Check, Clock, Leaf, Star } from 'lucide-react';
-import TouchButton from '@/Components/Kiosk/TouchButton';
+import { ArrowLeft, Check, Clock, Leaf } from 'lucide-react';
+import GameDialog from '@/Components/Kiosk/GameDialog';
+import StarRating from '@/Components/Kiosk/StarRating';
+import { StatTile, TimerTile } from '@/Components/Kiosk/StatTiles';
 import { MemoryLogo } from '@/Components/Kiosk/GameLogos';
 import { MiniGameApi } from '@/lib/api';
 import { dealDeck, pickRoundLogos, ALL_LOGOS, type BrandLogo } from '@/lib/brandLogos';
@@ -8,7 +10,6 @@ import { useLocale } from '@/lib/i18n';
 
 // 2 minutes 30 seconds for 14 pairs.
 const TIME_LIMIT_SECONDS = 150;
-const DANGER_SECONDS = 20;
 const MISMATCH_DELAY_MS = 800;
 
 // Moves for a 3-star / 2-star finish; fourteen pairs can't be cleared in fewer than fourteen.
@@ -175,64 +176,6 @@ export default function MemoryMatchExperience({
     );
 }
 
-function StatTile({ label, value, progress }: { label: string; value: string | number; progress?: number }) {
-    return (
-        <div className="kiosk-card relative min-w-[6.5rem] flex-1 overflow-hidden px-4 pb-3 pt-2.5 landscape:min-w-[8.5rem] landscape:flex-none">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-ink-500">{label}</p>
-            <p className="font-display text-3xl font-black tabular-nums leading-tight text-leaf-800 landscape:text-4xl">{value}</p>
-            {progress !== undefined && (
-                <span className="absolute inset-x-0 bottom-0 h-1.5 bg-ink-100">
-                    <span
-                        className="block h-full bg-leaf-500 transition-[width] duration-500 ease-out"
-                        style={{ width: `${progress * 100}%` }}
-                    />
-                </span>
-            )}
-        </div>
-    );
-}
-
-/** The countdown: big digits with a bar along the tile's bottom edge that drains and turns red. */
-function TimerTile({ totalSeconds, running, onExpire }: { totalSeconds: number; running: boolean; onExpire: () => void }) {
-    const { t } = useLocale();
-    const [remaining, setRemaining] = useState(totalSeconds);
-    const onExpireRef = useRef(onExpire);
-    onExpireRef.current = onExpire;
-
-    useEffect(() => {
-        if (!running) return;
-        const interval = window.setInterval(() => setRemaining((prev) => Math.max(0, prev - 1)), 1000);
-        return () => window.clearInterval(interval);
-    }, [running]);
-
-    useEffect(() => {
-        if (remaining === 0 && running) onExpireRef.current();
-    }, [remaining, running]);
-
-    const danger = remaining <= DANGER_SECONDS;
-    const minutes = Math.floor(remaining / 60);
-    const seconds = remaining % 60;
-
-    return (
-        <div className="kiosk-card relative min-w-[7.5rem] flex-1 overflow-hidden px-4 pb-3 pt-2.5 landscape:min-w-[9.5rem] landscape:flex-none">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-ink-500">{t('timeRemaining')}</p>
-            <p
-                className={`font-display text-3xl font-black tabular-nums leading-tight landscape:text-4xl ${
-                    danger ? 'animate-pulse text-red-600' : 'text-citrus-600'
-                }`}
-            >
-                {minutes}:{seconds.toString().padStart(2, '0')}
-            </p>
-            <span className="absolute inset-x-0 bottom-0 h-1.5 bg-ink-100">
-                <span
-                    className={`block h-full transition-[width] duration-1000 ease-linear ${danger ? 'bg-red-500' : 'bg-citrus-500'}`}
-                    style={{ width: `${(remaining / totalSeconds) * 100}%` }}
-                />
-            </span>
-        </div>
-    );
-}
-
 function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip: () => void }) {
     const revealed = card.flipped || card.matched;
 
@@ -296,44 +239,30 @@ function ResultOverlay({
 }) {
     const { t } = useLocale();
     const won = outcome === 'win';
-    const stars = attempt.moves <= THREE_STAR_MOVES ? 3 : attempt.moves <= TWO_STAR_MOVES ? 2 : 1;
 
     return (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink-900/55 px-6 backdrop-blur-sm" role="dialog" aria-modal>
-            <div className="memory-result kiosk-card w-full max-w-md p-8 text-center landscape:p-10">
-                {won ? (
-                    <div className="mb-3 flex justify-center gap-1.5">
-                        {[1, 2, 3].map((n) => (
-                            <Star
-                                key={n}
-                                className={`h-12 w-12 ${n <= stars ? 'fill-citrus-500 text-citrus-500' : 'fill-ink-100 text-ink-200'}`}
-                                strokeWidth={1.5}
-                            />
-                        ))}
-                    </div>
+        <GameDialog
+            celebrate={won}
+            visual={
+                won ? (
+                    <StarRating stars={attempt.moves <= THREE_STAR_MOVES ? 3 : attempt.moves <= TWO_STAR_MOVES ? 2 : 1} />
                 ) : (
-                    <span className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-citrus-100 text-citrus-700">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-citrus-100 text-citrus-700">
                         <Clock className="h-9 w-9" />
                     </span>
-                )}
-                <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-leaf-800">
-                    {won ? t('memoryWinEyebrow') : t('memoryLoseEyebrow')}
-                </p>
-                <h3 className="mt-1 font-display text-4xl font-black uppercase text-ink-900">
-                    {won ? t('memoryWinTitle') : t('memoryLoseTitle')}
-                </h3>
-                <p className="mb-6 mt-2 text-lg text-ink-600">
-                    {won
-                        ? t('memoryWinBody', { moves: attempt.moves, seconds: attempt.seconds })
-                        : t('memoryLoseBody', { found: attempt.found, total: attempt.total })}
-                </p>
-                <div className="flex flex-col items-center gap-3">
-                    <TouchButton onClick={onPlayAgain}>{t('playAgain')}</TouchButton>
-                    <button onClick={onBack} className="text-sm font-semibold text-ink-500 underline hover:text-ink-900">
-                        {t('back')}
-                    </button>
-                </div>
-            </div>
-        </div>
+                )
+            }
+            eyebrow={won ? t('memoryWinEyebrow') : t('memoryLoseEyebrow')}
+            title={won ? t('memoryWinTitle') : t('memoryLoseTitle')}
+            body={
+                won
+                    ? t('memoryWinBody', { moves: attempt.moves, seconds: attempt.seconds })
+                    : t('memoryLoseBody', { found: attempt.found, total: attempt.total })
+            }
+            primaryLabel={t('playAgain')}
+            onPrimary={onPlayAgain}
+            secondaryLabel={t('back')}
+            onSecondary={onBack}
+        />
     );
 }
