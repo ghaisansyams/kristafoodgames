@@ -23,6 +23,15 @@
     src: url('/fonts/garet-heavy.woff2') format('woff2');
 }
 
+/* The booth's portrait TV: scale the whole rem-based UI with the screen width (24px per rem at
+   1080px wide) so it reads from a step back, instead of a phone-sized layout lost in the middle
+   of a big screen. Phones and landscape screens keep the normal 16px. */
+@media (orientation: portrait) and (min-width: 900px) {
+    html {
+        font-size: calc(100vw / 45);
+    }
+}
+
 @layer components {
     /* The one surface every kiosk panel sits on: a solid white card with a soft olive-tinted
        shadow, replacing the old frosted-glass look. */

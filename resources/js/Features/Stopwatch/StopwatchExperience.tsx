@@ -138,29 +138,29 @@ export default function StopwatchExperience({
     const diff = finalElapsed !== null ? Math.abs(finalElapsed - TARGET_SECONDS) : null;
 
     return (
-        <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center px-6 py-10">
+        <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6 py-10">
             <button
                 onClick={onBack}
-                className="mb-4 flex w-fit items-center gap-2 self-start text-sm font-semibold text-ink-600 hover:text-ink-900"
+                className="absolute left-6 top-6 flex w-fit items-center gap-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
             >
                 <ArrowLeft className="h-4 w-4" /> {t('back')}
             </button>
 
-            <StopwatchLogo className={`mb-2 h-20 w-20 ${phase === 'running' ? 'animate-pulse' : ''}`} />
-            <h2 className="mb-1 font-display text-3xl font-black uppercase text-ink-900">{t('stopwatchTitle')}</h2>
-            <p className="mb-8 text-center text-ink-600">{t('stopwatchInstructions')}</p>
+            <StopwatchLogo className={`mb-3 h-28 w-28 ${phase === 'running' ? 'animate-pulse' : ''}`} />
+            <h2 className="mb-2 font-display text-4xl font-black uppercase text-ink-900">{t('stopwatchTitle')}</h2>
+            <p className="mb-10 text-center text-lg text-ink-600">{t('stopwatchInstructions')}</p>
 
             {/* The stopwatch face itself never leaves the screen, and never gets covered by a
                 popup — the result is read straight off it, like a real stopwatch. */}
-            <div className="mb-6 rounded-3xl border border-ink-100 bg-white px-10 py-8 shadow-card">
-                <span className="font-display text-6xl font-black tabular-nums text-citrus-600">
+            <div className="mb-8 rounded-[2rem] border border-ink-100 bg-white px-12 py-10 shadow-card-lg">
+                <span className="font-display text-7xl font-black tabular-nums text-citrus-600 sm:text-8xl">
                     {(phase === 'result' ? finalElapsed! : elapsed).toFixed(2)}
                 </span>
-                <span className="ml-1 text-2xl text-ink-500">s</span>
+                <span className="ml-1 text-3xl text-ink-500">s</span>
             </div>
 
             {phase === 'result' && (
-                <p className="mb-6 text-center text-ink-600">
+                <p className="mb-8 text-center text-lg text-ink-600">
                     {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} —{' '}
                     {diff!.toFixed(2)}s {t('offTarget')}
                 </p>

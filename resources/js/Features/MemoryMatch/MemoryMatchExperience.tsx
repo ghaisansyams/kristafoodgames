@@ -25,9 +25,9 @@ function newDeck(): Card[] {
 }
 
 /**
- * Landscape-first: on a wide screen the page is exactly one viewport tall, with a slim header
- * of stat tiles above a 7x4 board whose cards stretch to fill the remaining height. In
- * portrait (a phone) the board falls back to 4 columns of fixed-ratio cards and the page scrolls.
+ * The page is always exactly one viewport tall: a header of stat tiles above a board whose cards
+ * stretch to fill the remaining space — 4 columns x 7 rows on the booth's portrait TV, 7 x 4 on
+ * a landscape screen.
  */
 export default function MemoryMatchExperience({
     visitorId,
@@ -136,7 +136,7 @@ export default function MemoryMatchExperience({
     }
 
     return (
-        <div className="mx-auto flex min-h-screen w-full max-w-[1760px] flex-col gap-3 px-4 py-4 landscape:h-screen landscape:gap-4 landscape:px-8 landscape:py-5">
+        <div className="mx-auto flex h-screen w-full max-w-[1760px] flex-col gap-3 px-4 py-4 landscape:gap-4 landscape:px-8 landscape:py-5">
             <header className="flex flex-wrap items-center gap-x-6 gap-y-3 landscape:flex-nowrap">
                 <button
                     onClick={onBack}
@@ -146,7 +146,7 @@ export default function MemoryMatchExperience({
                 </button>
 
                 <div className="flex min-w-0 flex-1 items-center gap-4">
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-100 landscape:h-16 landscape:w-16">
+                    <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-100 sm:flex landscape:h-16 landscape:w-16">
                         <MemoryLogo className="h-10 w-10 landscape:h-12 landscape:w-12" />
                     </span>
                     <div className="min-w-0">
@@ -164,7 +164,7 @@ export default function MemoryMatchExperience({
                 </div>
             </header>
 
-            <div className="grid min-h-0 w-full grid-cols-4 gap-2.5 [perspective:1600px] landscape:flex-1 landscape:grid-cols-7 landscape:grid-rows-4 landscape:gap-3">
+            <div className="grid min-h-0 w-full flex-1 grid-cols-4 grid-rows-7 gap-2.5 [perspective:1600px] landscape:grid-cols-7 landscape:grid-rows-4 landscape:gap-3">
                 {cards.map((card, index) => (
                     <MemoryCard key={`${round}-${card.key}`} card={card} index={index} onFlip={() => flip(card.key)} />
                 ))}
@@ -243,7 +243,7 @@ function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip
             disabled={revealed}
             aria-label={revealed ? card.logo.label : undefined}
             style={{ animationDelay: `${index * 25}ms` }}
-            className="memory-deal relative aspect-[4/5] touch-manipulation rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 active:scale-[0.97] motion-safe:transition-transform landscape:aspect-auto landscape:h-full landscape:min-h-0"
+            className="memory-deal relative h-full min-h-0 touch-manipulation rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 active:scale-[0.97] motion-safe:transition-transform"
         >
             <span
                 className={`absolute inset-0 transition-transform duration-500 ease-out [transform-style:preserve-3d] motion-reduce:duration-0 ${
@@ -253,14 +253,14 @@ function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip
                 {/* Face-down: the Foopak leaf-green back with a stitched inner border. */}
                 <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-leaf-400 via-leaf-500 to-leaf-600 shadow-[0_5px_0_0_#6a8113] [backface-visibility:hidden]">
                     <span className="absolute inset-1.5 rounded-xl border-2 border-dashed border-white/50" />
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/25 landscape:h-14 landscape:w-14">
-                        <Leaf className="h-6 w-6 text-white landscape:h-8 landscape:w-8" strokeWidth={2.2} />
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/25 landscape:h-14 landscape:w-14">
+                        <Leaf className="h-7 w-7 text-white landscape:h-8 landscape:w-8" strokeWidth={2.2} />
                     </span>
                 </span>
 
                 {/* Face-up: the logo on white; a matched pair gets a green frame and a check. */}
                 <span
-                    className={`absolute inset-0 flex items-center justify-center rounded-2xl border-2 p-2 [backface-visibility:hidden] [transform:rotateY(180deg)] landscape:p-4 ${
+                    className={`absolute inset-0 flex items-center justify-center rounded-2xl border-2 p-3 [backface-visibility:hidden] [transform:rotateY(180deg)] landscape:p-4 ${
                         card.matched
                             ? 'memory-match border-leaf-500 bg-leaf-50 shadow-[0_5px_0_0_#a3c226]'
                             : 'border-ink-100 bg-white shadow-[0_5px_0_0_#dadfd2]'
