@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import LogoCarousel from '@/Components/Kiosk/LogoCarousel';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { MiniGameApi } from '@/lib/api';
@@ -138,51 +139,60 @@ export default function StopwatchExperience({
     const diff = finalElapsed !== null ? Math.abs(finalElapsed - TARGET_SECONDS) : null;
 
     return (
-        <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6 py-10">
-            <button
-                onClick={onBack}
-                className="absolute left-6 top-6 flex w-fit items-center gap-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
-            >
-                <ArrowLeft className="h-4 w-4" /> {t('back')}
-            </button>
+        <div className="flex min-h-screen w-full flex-col items-center pb-10 pt-16 portrait:sm:pb-[22.5rem]">
+            {/* Fills the space above the stopwatch with the product logos, taking turns in the middle. */}
+            <LogoCarousel className="mb-4" />
 
-            <StopwatchLogo className={`mb-3 h-28 w-28 ${phase === 'running' ? 'animate-pulse' : ''}`} />
-            <h2 className="mb-2 font-display text-4xl font-black uppercase text-ink-900">{t('stopwatchTitle')}</h2>
-            <p className="mb-10 text-center text-lg text-ink-600">{t('stopwatchInstructions')}</p>
+            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-6">
+                <button
+                    onClick={onBack}
+                    className="absolute left-6 top-6 flex w-fit items-center gap-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
+                >
+                    <ArrowLeft className="h-4 w-4" /> {t('back')}
+                </button>
 
-            {/* The stopwatch face itself never leaves the screen, and never gets covered by a
+                <StopwatchLogo className={`mb-2 h-16 w-16 ${phase === 'running' ? 'animate-pulse' : ''}`} />
+                <h2 className="mb-2 font-display text-4xl font-black uppercase text-ink-900">{t('stopwatchTitle')}</h2>
+                <p className="mb-6 text-center text-lg text-ink-600">{t('stopwatchInstructions')}</p>
+
+                {/* The stopwatch face itself never leaves the screen, and never gets covered by a
                 popup — the result is read straight off it, like a real stopwatch. */}
-            <div className="mb-8 rounded-[2rem] border border-ink-100 bg-white px-12 py-10 shadow-card-lg">
-                <span className="font-display text-7xl font-black tabular-nums text-citrus-600 sm:text-8xl">
-                    {(phase === 'result' ? finalElapsed! : elapsed).toFixed(2)}
-                </span>
-                <span className="ml-1 text-3xl text-ink-500">s</span>
-            </div>
-
-            {phase === 'result' && (
-                <p className="mb-8 text-center text-lg text-ink-600">
-                    {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} —{' '}
-                    {diff!.toFixed(2)}s {t('offTarget')}
-                </p>
-            )}
-
-            {phase === 'idle' && <TouchButton onClick={handlePress}>{t('start')}</TouchButton>}
-            {phase === 'running' && (
-                <TouchButton variant="secondary" onClick={handlePress}>
-                    {t('stop')}
-                </TouchButton>
-            )}
-            {phase === 'result' && (
-                <div className="flex flex-col items-center gap-3">
-                    <TouchButton variant={won ? 'secondary' : 'ghost'} onClick={handlePress}>
-                        {t('playAgain')}
-                    </TouchButton>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-leaf-800">{t('pressSpaceToPlayAgain')}</p>
-                    <button onClick={onBack} className="text-sm font-semibold text-ink-500 underline hover:text-ink-900">
-                        {t('back')}
-                    </button>
+                <div className="mb-6 rounded-[2rem] border border-ink-100 bg-white px-12 py-7 shadow-card-lg">
+                    <span className="font-display text-7xl font-black tabular-nums text-citrus-600 sm:text-8xl">
+                        {(phase === 'result' ? finalElapsed! : elapsed).toFixed(2)}
+                    </span>
+                    <span className="ml-1 text-3xl text-ink-500">s</span>
                 </div>
-            )}
+
+                {phase === 'result' && (
+                    <p className="mb-6 text-center text-lg text-ink-600">
+                        {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} — {diff!.toFixed(2)}s{' '}
+                        {t('offTarget')}
+                    </p>
+                )}
+
+                {phase === 'idle' && (
+                    <TouchButton size="lg" onClick={handlePress}>
+                        {t('start')}
+                    </TouchButton>
+                )}
+                {phase === 'running' && (
+                    <TouchButton size="lg" variant="secondary" onClick={handlePress}>
+                        {t('stop')}
+                    </TouchButton>
+                )}
+                {phase === 'result' && (
+                    <div className="flex flex-col items-center gap-3">
+                        <TouchButton size="lg" variant={won ? 'secondary' : 'ghost'} onClick={handlePress}>
+                            {t('playAgain')}
+                        </TouchButton>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-leaf-800">{t('pressSpaceToPlayAgain')}</p>
+                        <button onClick={onBack} className="text-sm font-semibold text-ink-500 underline hover:text-ink-900">
+                            {t('back')}
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

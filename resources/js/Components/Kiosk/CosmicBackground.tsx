@@ -12,8 +12,15 @@ export default function CosmicBackground({
     className = '',
     pauseHologram = false,
     hideHologram = false,
+    hologramLargePortraitOnly = false,
     children,
-}: PropsWithChildren<{ className?: string; pauseHologram?: boolean; hideHologram?: boolean }>) {
+}: PropsWithChildren<{
+    className?: string;
+    pauseHologram?: boolean;
+    hideHologram?: boolean;
+    /** Show it only on a portrait tablet/TV, the screens that leave room for it under a tall centred column. */
+    hologramLargePortraitOnly?: boolean;
+}>) {
     return (
         <div className={`relative min-h-screen overflow-hidden bg-gradient-to-br from-[#fbfaf3] via-[#f7f5e8] to-[#eff3dc] ${className}`}>
             {/* Injected once here (not per-screen) so every game's animated logo keeps its
@@ -50,7 +57,7 @@ export default function CosmicBackground({
             {!hideHologram && (
                 <HologramEmblem
                     paused={pauseHologram}
-                    className="fixed bottom-0 left-1/2 h-[320px] w-[300px] -translate-x-1/2 opacity-80 sm:h-[400px] sm:w-[360px]"
+                    className={`fixed bottom-0 left-1/2 h-[340px] w-[310px] -translate-x-1/2 [--cube:88px] portrait:h-[13rem] portrait:w-[12rem] portrait:[--cube:3.75rem] portrait:sm:h-[22rem] portrait:sm:w-[20rem] portrait:sm:[--cube:6.5rem] ${hologramLargePortraitOnly ? 'hidden portrait:sm:block' : ''}`}
                 />
             )}
 

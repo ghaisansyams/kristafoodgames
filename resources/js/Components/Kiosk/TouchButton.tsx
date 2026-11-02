@@ -12,16 +12,23 @@ const variants: Record<Variant, string> = {
     ghost: 'border-2 border-ink-200 bg-white text-ink-700 shadow-[0_6px_0_0_#dadfd2] hover:bg-ink-50 active:translate-y-1 active:shadow-[0_2px_0_0_#dadfd2]',
 };
 
+const sizes = {
+    md: 'min-h-[64px] px-8 py-4 text-xl',
+    // The one big action on a game screen (e.g. Stop at 10.00's start/stop), easy to hit at a glance.
+    lg: 'min-h-[5.5rem] min-w-[17rem] px-14 py-5 text-3xl',
+};
+
 export default function TouchButton({
     children,
     variant = 'primary',
+    size = 'md',
     className = '',
     ...props
-}: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }>) {
+}: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: keyof typeof sizes }>) {
     return (
         <button
             {...props}
-            className={`min-h-[64px] rounded-full px-8 py-4 font-display text-xl font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0 ${variants[variant]} ${className}`}
+            className={`rounded-full font-display font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0 ${sizes[size]} ${variants[variant]} ${className}`}
         >
             {children}
         </button>

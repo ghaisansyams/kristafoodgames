@@ -191,7 +191,11 @@ function HubScreen() {
     }
 
     return (
-        <CosmicBackground pauseHologram={stopwatchRunning} hideHologram={screen === 'memory_match'}>
+        <CosmicBackground
+            pauseHologram={stopwatchRunning}
+            hideHologram={screen === 'memory_match'}
+            hologramLargePortraitOnly={screen === 'stopwatch'}
+        >
             <Head title="KRISTA FOOD 2026 — Interactive Experience Hub" />
 
             {(screen === 'idle' || screen === 'called' || screen === 'choose') && (
@@ -201,7 +205,7 @@ function HubScreen() {
             )}
 
             {screen === 'idle' && (
-                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[23rem]">
                     <SponsorLogos className="mt-10" />
                     <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-ink-900">
@@ -226,7 +230,7 @@ function HubScreen() {
             )}
 
             {screen === 'called' && calledTicket && (
-                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[23rem]">
                     <Sparkles className="h-16 w-16 animate-bounce text-citrus-500" strokeWidth={1.5} />
                     <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">
                         {t('calledHeading', { number: calledTicket.number })}
@@ -239,7 +243,7 @@ function HubScreen() {
             )}
 
             {screen === 'choose' && (
-                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[23rem]">
                     <SponsorLogos />
                     <h1 className="pt-4 font-display text-3xl font-black uppercase text-ink-900 landscape:text-4xl">{t('chooseEyebrow')}</h1>
                     <div className="flex w-full max-w-xl flex-wrap justify-center gap-5 landscape:max-w-4xl landscape:flex-nowrap landscape:gap-8">
@@ -254,7 +258,7 @@ function HubScreen() {
             )}
 
             {screen === 'summary' && (
-                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[23rem]">
                     <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-leaf-800">
                         {t('summaryEyebrow')}
                     </p>
