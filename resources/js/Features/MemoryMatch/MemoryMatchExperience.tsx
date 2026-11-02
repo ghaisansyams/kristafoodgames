@@ -4,7 +4,7 @@ import CountdownBar from '@/Components/Kiosk/CountdownBar';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { MemoryLogo } from '@/Components/Kiosk/GameLogos';
 import { MiniGameApi } from '@/lib/api';
-import { dealDeck, pickRoundLogos, ANCHOR_LOGOS, PRODUCT_LOGOS, type BrandLogo } from '@/lib/brandLogos';
+import { dealDeck, pickRoundLogos, ALL_LOGOS, type BrandLogo } from '@/lib/brandLogos';
 import { useLocale } from '@/lib/i18n';
 
 const TIME_LIMIT_SECONDS = 90;
@@ -50,7 +50,7 @@ export default function MemoryMatchExperience({
     // Decode every logo while all cards are still face-down; otherwise the first flip of each
     // pair waits on the network and the reveal looks laggy on the booth screen.
     useEffect(() => {
-        [...ANCHOR_LOGOS, ...PRODUCT_LOGOS].forEach((logo) => {
+        ALL_LOGOS.forEach((logo) => {
             const img = new Image();
             img.src = logo.src;
         });
@@ -217,7 +217,12 @@ function MemoryCard({ card, index, onFlip }: { card: Card; index: number; onFlip
                             : 'border-ink-100 bg-white shadow-[0_5px_0_0_#dadfd2]'
                     }`}
                 >
-                    <img src={card.logo.src} alt="" draggable={false} className="max-h-full max-w-full select-none object-contain" />
+                    <img
+                        src={card.logo.src}
+                        alt=""
+                        draggable={false}
+                        className={`max-h-full max-w-full select-none object-contain ${card.logo.raise ? '-translate-y-[14%]' : ''}`}
+                    />
                     {card.matched && (
                         <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-ink-900 shadow">
                             <Check className="h-4 w-4" strokeWidth={3.5} />
