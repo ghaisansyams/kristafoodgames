@@ -30,3 +30,47 @@
         @apply rounded-3xl border border-ink-100 bg-white shadow-card;
     }
 }
+
+/* Memory Match: cards are dealt in with a short stagger, a matched pair pops once, and the
+   result panel rises in. All of it is skipped for visitors who ask for reduced motion. */
+@keyframes memory-deal {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes memory-pop {
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes memory-rise {
+    from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .memory-deal {
+        animation: memory-deal 0.4s ease-out both;
+    }
+
+    .memory-match {
+        animation: memory-pop 0.45s ease-out 0.4s;
+    }
+
+    .memory-result {
+        animation: memory-rise 0.35s ease-out both;
+    }
+}

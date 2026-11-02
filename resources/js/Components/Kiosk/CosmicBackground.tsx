@@ -45,7 +45,7 @@ export default function CosmicBackground({
                 the full scrollable page) rather than the header, so it fills the empty space
                 below short content (like the two-card game grid) without landing mid-content
                 on taller screens that need to scroll. */}
-            {/* Left out on dense screens (the Decision Lab's option grids), where it would show
+            {/* Left out on dense screens (the Memory Match card grid), where it would show
                 through the gaps between cards. */}
             {!hideHologram && (
                 <HologramEmblem

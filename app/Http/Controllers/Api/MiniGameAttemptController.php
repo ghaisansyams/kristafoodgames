@@ -14,7 +14,7 @@ class MiniGameAttemptController extends Controller
     {
         $data = $request->validate([
             'visitor_id' => ['nullable', 'exists:visitors,id'],
-            'game' => ['required', Rule::in(['stopwatch'])],
+            'game' => ['required', Rule::in(['stopwatch', 'memory_match'])],
             'won' => ['required', 'boolean'],
             'meta' => ['nullable', 'array'],
         ]);

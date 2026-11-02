@@ -28,6 +28,17 @@ class MiniGameAttemptTest extends TestCase
         ]);
     }
 
+    public function test_a_memory_match_attempt_can_be_recorded(): void
+    {
+        $this->postJson('/api/mini-game-attempts', [
+            'game' => 'memory_match',
+            'won' => true,
+            'meta' => ['moves' => 11, 'seconds' => 48, 'pairs_found' => 8],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('mini_game_attempts', ['game' => 'memory_match', 'won' => true]);
+    }
+
     public function test_game_must_be_one_of_the_known_mini_games(): void
     {
         $this->postJson('/api/mini-game-attempts', [

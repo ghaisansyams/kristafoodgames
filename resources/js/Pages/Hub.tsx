@@ -7,15 +7,14 @@ import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
 import SponsorLogos from '@/Components/Kiosk/SponsorLogos';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import LeaderboardOptIn from '@/Components/Kiosk/LeaderboardOptIn';
-import { DecisionLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
+import { MemoryLogo, StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { useIdleReset } from '@/lib/useIdleReset';
 import { LocaleProvider, useLocale } from '@/lib/i18n';
 import { MiniGameApi, QueueApi, type QueueTicketSummary } from '@/lib/api';
-import DecisionLabExperience from '@/Features/DecisionLab/DecisionLabExperience';
+import MemoryMatchExperience, { type MemoryAttempt } from '@/Features/MemoryMatch/MemoryMatchExperience';
 import StopwatchExperience from '@/Features/Stopwatch/StopwatchExperience';
-import type { DecisionResult } from '@/types/content';
 
-type Screen = 'idle' | 'called' | 'choose' | 'decision_lab' | 'stopwatch' | 'summary';
+type Screen = 'idle' | 'called' | 'choose' | 'memory_match' | 'stopwatch' | 'summary';
 
 type StopwatchBest = { elapsed: number; won: boolean };
 
@@ -51,7 +50,17 @@ function HubScreen() {
     // Best result per game played this visit, surfaced on the end-of-visit summary screen
     // instead of a mid-game popup — only the games actually played show up there.
     const [stopwatchBest, setStopwatchBest] = useState<StopwatchBest | null>(null);
-    const [decisionLabResult, setDecisionLabResult] = useState<DecisionResult | null>(null);
+    const [memoryBest, setMemoryBest] = useState<MemoryAttempt | null>(null);
+
+    // The best Memory Match try is a win in the fewest moves, or failing any win, the most pairs found.
+    const recordMemoryAttempt = useCallback((attempt: MemoryAttempt) => {
+        setMemoryBest((prev) => {
+            if (!prev) return attempt;
+            if (attempt.won !== prev.won) return attempt.won ? attempt : prev;
+            if (attempt.won) return attempt.moves < prev.moves ? attempt : prev;
+            return attempt.found > prev.found ? attempt : prev;
+        });
+    }, []);
 
     const recordStopwatchAttempt = useCallback((attempt: StopwatchBest) => {
         setStopwatchBest((prev) => (prev && Math.abs(prev.elapsed - 10) <= Math.abs(attempt.elapsed - 10) ? prev : attempt));
@@ -71,7 +80,7 @@ function HubScreen() {
     );
 
     const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
-        { screen: 'decision_lab', title: t('gameDecisionLabTitle'), tagline: t('gameDecisionLabTagline'), Logo: DecisionLogo },
+        { screen: 'memory_match', title: t('gameMemoryTitle'), tagline: t('gameMemoryTagline'), Logo: MemoryLogo },
         { screen: 'stopwatch', title: t('gameStopwatchTitle'), tagline: t('gameStopwatchTagline'), Logo: StopwatchLogo },
     ];
 
@@ -86,7 +95,7 @@ function HubScreen() {
         setVisitorId(null);
         setCalledTicket(null);
         setStopwatchBest(null);
-        setDecisionLabResult(null);
+        setMemoryBest(null);
         setScreen('idle');
 
         QueueApi.advance(finishedTicketId)
@@ -103,12 +112,12 @@ function HubScreen() {
     // resetting straight back to idle — the queue only advances once the visitor
     // confirms they're finished from that screen.
     const finishVisit = useCallback(() => {
-        if (stopwatchBest || decisionLabResult) {
+        if (stopwatchBest || memoryBest) {
             setScreen('summary');
         } else {
             resetToIdle();
         }
-    }, [stopwatchBest, decisionLabResult, resetToIdle]);
+    }, [stopwatchBest, memoryBest, resetToIdle]);
 
     // An abandoned session (visitor walked off mid-game) shouldn't block the booth for the
     // next person — bounce back to idle (and advance the queue) after a stretch of no touch
@@ -182,7 +191,7 @@ function HubScreen() {
     }
 
     return (
-        <CosmicBackground pauseHologram={stopwatchRunning} hideHologram={screen === 'decision_lab'}>
+        <CosmicBackground pauseHologram={stopwatchRunning} hideHologram={screen === 'memory_match'}>
             <Head title="KRISTA FOOD 2026 — Interactive Experience Hub" />
 
             {(screen === 'idle' || screen === 'called' || screen === 'choose') && (
@@ -233,7 +242,7 @@ function HubScreen() {
                 <div className="flex min-h-screen flex-col items-center gap-6 px-6 py-10 text-center">
                     <SponsorLogos className="mt-10" />
                     <h1 className="pt-4 font-display text-3xl font-black uppercase text-ink-900">{t('chooseEyebrow')}</h1>
-                    <div className="flex w-full max-w-md flex-wrap justify-center gap-4">
+                    <div className="flex w-full max-w-xl flex-wrap justify-center gap-5">
                         {GAMES.map((game) => (
                             <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
                         ))}
@@ -252,13 +261,15 @@ function HubScreen() {
                     <h1 className="font-display text-3xl font-black uppercase text-ink-900">{t('summaryTitle')}</h1>
 
                     <div className="flex w-full max-w-md flex-col gap-4">
-                        {decisionLabResult && (
+                        {memoryBest && (
                             <div className="rounded-3xl border border-ink-100 bg-white p-6 text-left shadow-card">
-                                <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">{t('gameDecisionLabTitle')}</p>
+                                <p className="text-xs font-semibold uppercase tracking-widest text-ink-500">{t('summaryMemoryLabel')}</p>
                                 <p className="mt-1 font-display text-2xl font-black text-leaf-700">
-                                    {decisionLabResult.solution_label}
+                                    {memoryBest.won
+                                        ? t('summaryMemoryValue', { moves: memoryBest.moves, seconds: memoryBest.seconds })
+                                        : t('summaryMemoryLost', { found: memoryBest.found, total: memoryBest.total })}
                                 </p>
-                                <p className="text-sm text-ink-600">{decisionLabResult.product.description}</p>
+                                <p className="text-sm text-ink-600">{memoryBest.won ? t('memoryWinTitle') : t('memoryLoseTitle')}</p>
                             </div>
                         )}
 
@@ -285,8 +296,8 @@ function HubScreen() {
 
             {screen !== 'idle' && screen !== 'called' && screen !== 'choose' && screen !== 'summary' && (
                 <>
-                    {screen === 'decision_lab' && (
-                        <DecisionLabExperience visitorId={visitorId} onBack={goToChoose} onResult={setDecisionLabResult} />
+                    {screen === 'memory_match' && (
+                        <MemoryMatchExperience visitorId={visitorId} onBack={goToChoose} onResult={recordMemoryAttempt} />
                     )}
                     {screen === 'stopwatch' && (
                         <StopwatchExperience
@@ -313,13 +324,13 @@ function GameCard({
     return (
         <button
             onClick={onClick}
-            className="group flex min-h-[170px] w-[47%] min-w-[150px] flex-col items-center justify-center gap-2 rounded-3xl border border-ink-100 bg-white p-5 text-center shadow-card transition hover:border-leaf-200 hover:bg-leaf-50 hover:shadow-card active:scale-95"
+            className="group flex min-h-[250px] w-[47%] min-w-[150px] flex-col items-center justify-center gap-3 rounded-[2rem] border-2 border-transparent bg-white p-6 text-center shadow-card-lg transition hover:border-leaf-300 hover:bg-leaf-50 active:scale-95"
         >
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-100">
-                <Logo className="h-10 w-10" />
+            <span className="mb-1 flex h-24 w-24 items-center justify-center rounded-3xl border border-leaf-200 bg-leaf-100 transition group-hover:bg-white">
+                <Logo className="h-16 w-16" />
             </span>
-            <span className="font-display text-base font-black uppercase leading-tight text-ink-900">{game.title}</span>
-            <span className="text-xs text-ink-600">{game.tagline}</span>
+            <span className="font-display text-xl font-black uppercase leading-tight text-ink-900">{game.title}</span>
+            <span className="text-sm text-ink-600">{game.tagline}</span>
         </button>
     );
 }

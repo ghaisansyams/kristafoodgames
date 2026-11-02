@@ -4,7 +4,7 @@ import { useLocale } from '@/lib/i18n';
 /**
  * Persistent countdown from `totalSeconds`, turning red once `dangerSeconds` remain.
  * Starts counting the moment it mounts and keeps running across stage changes as long
- * as the parent keeps it mounted (it is not reset between Decision Lab stages).
+ * as the parent keeps it mounted (it is not reset between stages of a game).
  */
 export default function CountdownBar({
     totalSeconds = 180,

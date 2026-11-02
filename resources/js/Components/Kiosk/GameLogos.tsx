@@ -3,22 +3,17 @@
  * dependency), each shaped to read instantly as its own game rather than a generic icon.
  */
 
-export function DecisionLogo({ className = 'h-10 w-10' }: { className?: string }) {
+export function MemoryLogo({ className = 'h-10 w-10' }: { className?: string }) {
     return (
         <svg viewBox="0 0 48 48" className={className}>
-            <g style={{ transformOrigin: '24px 30px', animation: 'logo-tilt 2.4s ease-in-out infinite' }}>
-                <rect x="10" y="20" width="28" height="18" rx="2" fill="#f39308" stroke="#7e4706" strokeWidth="1.5" />
-                <path d="M10 20 L24 12 L38 20" fill="none" stroke="#6a8113" strokeWidth="2" strokeLinejoin="round" />
-                <path d="M24 12 V26" stroke="#7e4706" strokeWidth="1.5" />
+            <g style={{ transformOrigin: '15px 24px', animation: 'logo-tilt 2.4s ease-in-out infinite' }}>
+                <rect x="4" y="9" width="19" height="27" rx="4" fill="#a3c226" stroke="#6a8113" strokeWidth="1.5" />
+                <path d="M13.5 18 q5 4 0 11 q-5 -7 0 -11z" fill="#ffffff" opacity="0.85" />
             </g>
-            <path
-                d="M16 8 q8 -6 16 0"
-                fill="none"
-                stroke="#6a8113"
-                strokeWidth="2"
-                strokeLinecap="round"
-                style={{ animation: 'logo-fade 2.4s ease-in-out infinite' }}
-            />
+            <g style={{ transformOrigin: '33px 24px', animation: 'logo-tilt 2.4s ease-in-out infinite reverse' }}>
+                <rect x="25" y="12" width="19" height="27" rx="4" fill="#ffffff" stroke="#f39308" strokeWidth="2" />
+                <path d="M31 27 l4 4 l7 -9" fill="none" stroke="#f39308" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            </g>
         </svg>
     );
 }
