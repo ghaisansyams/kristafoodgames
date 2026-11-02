@@ -18,6 +18,7 @@ export default function GameDialog({
     secondaryLabel,
     onSecondary,
     celebrate = false,
+    wide = false,
 }: {
     visual?: ReactNode;
     eyebrow: string;
@@ -28,6 +29,8 @@ export default function GameDialog({
     secondaryLabel?: string;
     onSecondary?: () => void;
     celebrate?: boolean;
+    /** A wider card, for dialogs that carry more than a line of text (e.g. how-to-play steps). */
+    wide?: boolean;
 }) {
     return (
         <div className="fixed inset-0 z-30 flex items-center justify-center overflow-hidden bg-ink-900/55 px-6 backdrop-blur-sm" role="dialog" aria-modal>
@@ -48,7 +51,7 @@ export default function GameDialog({
                 </div>
             )}
 
-            <div className="memory-result kiosk-card relative w-full max-w-md p-8 text-center landscape:p-10">
+            <div className={`memory-result kiosk-card relative w-full p-8 text-center landscape:p-10 ${wide ? 'max-w-2xl' : 'max-w-md'}`}>
                 {visual && <div className="mb-3 flex justify-center">{visual}</div>}
                 <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-leaf-800">{eyebrow}</p>
                 <h3 className="mt-1 font-display text-4xl font-black uppercase leading-tight text-ink-900">{title}</h3>

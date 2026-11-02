@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PackageCheck } from 'lucide-react';
+import { Gauge, PackageCheck, Pointer, Zap } from 'lucide-react';
 import GameDialog from '@/Components/Kiosk/GameDialog';
 import StarRating from '@/Components/Kiosk/StarRating';
 import { StatTile, TimerTile } from '@/Components/Kiosk/StatTiles';
@@ -10,15 +10,21 @@ import { useLocale } from '@/lib/i18n';
 
 const GAME_SECONDS = 60;
 
-// Belt speed in belt-lengths per second, ramping from the first value to the second over the
-// minute so the game gets harder as it goes.
-const SPEED_START = 0.1;
-const SPEED_END = 0.2;
+// The belt steps up a level every LEVEL_SECONDS. Speeds are in belt-lengths per second, so a
+// logo crosses the belt in about 11s at level 1 and about 3s at level 6.
+const LEVEL_SECONDS = 10;
+const SPEED_LEVELS = [0.09, 0.125, 0.165, 0.21, 0.26, 0.32];
 
 // Gap between one logo and the next, in logo widths. New logos are spaced by distance rather
 // than time, so however fast the belt runs they never overlap.
 const GAP_MIN = 1.35;
 const GAP_MAX = 1.95;
+
+// The guided tutorial: one logo per brand, crawling in slowly and waiting on the belt until
+// the visitor taps the right bin.
+const TUTORIAL_SPEED = 0.16;
+const TUTORIAL_STOP_X = 0.42;
+const TUTORIAL_PAUSE_MS = 700;
 
 // How long a sorted or missed logo takes to animate away before it is dropped.
 const LEAVE_MS = 450;
@@ -30,14 +36,22 @@ const TWO_STAR_CORRECT = 16;
 type Brand = 'foopak' | 'enza' | 'sinar';
 type ItemStatus = 'moving' | 'correct' | 'wrong' | 'missed';
 type Item = { id: number; logo: BrandLogo; brand: Brand; x: number; status: ItemStatus; leftAt: number };
-type Phase = 'ready' | 'playing' | 'done';
+type Phase = 'intro' | 'tutorial' | 'tutorialDone' | 'playing' | 'done';
 
-export type ConveyorResult = { correct: number; wrong: number; missed: number; bestCombo: number };
+export type ConveyorResult = { correct: number; wrong: number; missed: number; bestCombo: number; level: number };
+
+const BRAND_NAMES: Record<Brand, string> = { foopak: 'Foopak', enza: 'Enza', sinar: 'Sinar' };
 
 const BINS: { brand: Brand; logos: BrandLogo[]; key: string }[] = [
     { brand: 'foopak', logos: FOOPAK_LOGOS, key: '1' },
     { brand: 'enza', logos: ENZA_LOGOS, key: '2' },
     { brand: 'sinar', logos: SINAR_LOGOS, key: '3' },
+];
+
+const TUTORIAL_ITEMS: { brand: Brand; logo: BrandLogo }[] = [
+    { brand: 'foopak', logo: FOOPAK_LOGOS.find((logo) => logo.id === 'natura')! },
+    { brand: 'enza', logo: ENZA_LOGOS.find((logo) => logo.id === 'enza-hs')! },
+    { brand: 'sinar', logo: SINAR_LOGOS.find((logo) => logo.id === 'sinar-board')! },
 ];
 
 const KEY_TO_BRAND: Record<string, Brand> = { '1': 'foopak', '2': 'enza', '3': 'sinar', ArrowLeft: 'foopak', ArrowDown: 'enza', ArrowRight: 'sinar' };
@@ -57,14 +71,32 @@ function frontItem(items: Item[]): Item | undefined {
 }
 
 function freshSim() {
-    return { items: [] as Item[], nextId: 1, sinceSpawnPx: 0, nextGapPx: 0, startedAt: 0, correct: 0, wrong: 0, missed: 0, combo: 0, bestCombo: 0 };
+    return {
+        items: [] as Item[],
+        nextId: 1,
+        sinceSpawnPx: 0,
+        nextGapPx: 0,
+        startedAt: 0,
+        speed: SPEED_LEVELS[0],
+        speedPx: 0,
+        level: 1,
+        tutorialStep: 0,
+        tutorialResumeAt: 0,
+        correct: 0,
+        wrong: 0,
+        missed: 0,
+        combo: 0,
+        bestCombo: 0,
+    };
 }
 
 export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: () => void; onResult?: (result: ConveyorResult) => void }) {
     const { t } = useLocale();
-    const [phase, setPhase] = useState<Phase>('ready');
+    const [phase, setPhase] = useState<Phase>('intro');
     const [round, setRound] = useState(0);
     const [feedback, setFeedback] = useState<{ brand: Brand; ok: boolean; key: number } | null>(null);
+    const [tutorialMiss, setTutorialMiss] = useState(false);
+    const [speedUpLevel, setSpeedUpLevel] = useState<number | null>(null);
     const [, setFrame] = useState(0);
     const sim = useRef(freshSim());
     const trackRef = useRef<HTMLDivElement>(null);
@@ -77,10 +109,11 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
         });
     }, []);
 
-    // The game loop: the simulation lives in a ref and is mutated in place each animation
-    // frame; bumping `frame` re-renders the belt from it.
+    // The game loop, shared by the tutorial and the real round: the simulation lives in a ref and
+    // is mutated in place each animation frame; bumping `frame` re-renders the belt from it.
     useEffect(() => {
-        if (phase !== 'playing') return;
+        if (phase !== 'tutorial' && phase !== 'playing') return;
+        const tutorial = phase === 'tutorial';
 
         let frameId = 0;
         let last = performance.now();
@@ -92,36 +125,52 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
         const rootFontPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
         const itemPx = parseFloat(getComputedStyle(track).getPropertyValue('--item-w')) * rootFontPx;
         const travelPx = Math.max(1, track.clientWidth - itemPx);
-        state.sinceSpawnPx = state.nextGapPx = 0;
 
         const loop = (now: number) => {
             // Capped so a stalled tab doesn't jump the belt forward, but loose enough that a slow
             // booth PC still runs the game at full speed.
             const dt = Math.min(0.25, (now - last) / 1000);
             last = now;
-            const progress = Math.min(1, (now - state.startedAt) / (GAME_SECONDS * 1000));
 
-            const speed = lerp(SPEED_START, SPEED_END, progress);
+            if (tutorial) {
+                const moving = state.items.find((item) => item.status === 'moving');
+                if (!moving && state.tutorialStep < TUTORIAL_ITEMS.length && now >= state.tutorialResumeAt) {
+                    const { brand, logo } = TUTORIAL_ITEMS[state.tutorialStep];
+                    state.items.push({ id: state.nextId++, logo, brand, x: 0, status: 'moving', leftAt: 0 });
+                }
+                const crawling = moving && moving.x < TUTORIAL_STOP_X;
+                state.speedPx = crawling ? TUTORIAL_SPEED * travelPx : 0;
+                if (moving) moving.x = Math.min(TUTORIAL_STOP_X, moving.x + TUTORIAL_SPEED * dt);
+            } else {
+                const level = Math.min(SPEED_LEVELS.length, Math.floor((now - state.startedAt) / (LEVEL_SECONDS * 1000)) + 1);
+                if (level > state.level) {
+                    state.level = level;
+                    setSpeedUpLevel(level);
+                }
+                // Ease into each new level's speed over about half a second rather than lurching.
+                state.speed += (SPEED_LEVELS[state.level - 1] - state.speed) * Math.min(1, dt * 2.5);
+                state.speedPx = state.speed * travelPx;
 
-            state.sinceSpawnPx += speed * travelPx * dt;
-            if (state.sinceSpawnPx >= state.nextGapPx) {
-                state.items.push(randomItem(state.nextId++));
-                state.sinceSpawnPx = 0;
-                state.nextGapPx = itemPx * lerp(GAP_MIN, GAP_MAX, Math.random());
-            }
+                state.sinceSpawnPx += state.speedPx * dt;
+                if (state.sinceSpawnPx >= state.nextGapPx) {
+                    state.items.push(randomItem(state.nextId++));
+                    state.sinceSpawnPx = 0;
+                    state.nextGapPx = itemPx * lerp(GAP_MIN, GAP_MAX, Math.random());
+                }
 
-            for (const item of state.items) {
-                if (item.status !== 'moving') continue;
-                item.x = Math.min(1, item.x + speed * dt);
-                if (item.x >= 1) {
-                    item.status = 'missed';
-                    item.leftAt = now;
-                    state.missed++;
-                    state.combo = 0;
+                for (const item of state.items) {
+                    if (item.status !== 'moving') continue;
+                    item.x = Math.min(1, item.x + state.speed * dt);
+                    if (item.x >= 1) {
+                        item.status = 'missed';
+                        item.leftAt = now;
+                        state.missed++;
+                        state.combo = 0;
+                    }
                 }
             }
-            state.items = state.items.filter((item) => item.status === 'moving' || now - item.leftAt < LEAVE_MS);
 
+            state.items = state.items.filter((item) => item.status === 'moving' || now - item.leftAt < LEAVE_MS);
             setFrame((f) => f + 1);
             frameId = requestAnimationFrame(loop);
         };
@@ -132,14 +181,33 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
 
     const sort = useCallback(
         (brand: Brand) => {
-            if (phase !== 'playing') return;
+            if (phase !== 'tutorial' && phase !== 'playing') return;
             const state = sim.current;
             const item = frontItem(state.items);
             if (!item) return;
-
             const ok = item.brand === brand;
+            const now = performance.now();
+
+            if (phase === 'tutorial') {
+                setFeedback({ brand, ok, key: now });
+                // A wrong tap in the tutorial just explains again; the logo stays put.
+                if (!ok) {
+                    setTutorialMiss(true);
+                    return;
+                }
+                item.status = 'correct';
+                item.leftAt = now;
+                setTutorialMiss(false);
+                state.tutorialStep++;
+                state.tutorialResumeAt = now + TUTORIAL_PAUSE_MS;
+                if (state.tutorialStep === TUTORIAL_ITEMS.length) {
+                    window.setTimeout(() => setPhase('tutorialDone'), TUTORIAL_PAUSE_MS);
+                }
+                return;
+            }
+
             item.status = ok ? 'correct' : 'wrong';
-            item.leftAt = performance.now();
+            item.leftAt = now;
             if (ok) {
                 state.correct++;
                 state.combo++;
@@ -159,25 +227,41 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
         return () => window.clearTimeout(timeout);
     }, [feedback]);
 
-    function start() {
+    useEffect(() => {
+        if (speedUpLevel === null) return;
+        const timeout = window.setTimeout(() => setSpeedUpLevel(null), 1300);
+        return () => window.clearTimeout(timeout);
+    }, [speedUpLevel]);
+
+    function startTutorial() {
+        sim.current = freshSim();
+        setTutorialMiss(false);
+        setPhase('tutorial');
+    }
+
+    function startGame() {
         sim.current = freshSim();
         setFeedback(null);
+        setSpeedUpLevel(null);
         setRound((r) => r + 1);
         setPhase('playing');
     }
 
     function finish() {
-        const { correct, wrong, missed, bestCombo } = sim.current;
+        const { correct, wrong, missed, bestCombo, level } = sim.current;
         setPhase('done');
-        onResult?.({ correct, wrong, missed, bestCombo });
+        onResult?.({ correct, wrong, missed, bestCombo, level });
     }
 
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (e.repeat) return;
-            if (e.code === 'Space' && phase !== 'playing') {
-                e.preventDefault();
-                start();
+            if (e.code === 'Space') {
+                const next = { intro: startTutorial, tutorialDone: startGame, done: startGame }[phase as string];
+                if (next) {
+                    e.preventDefault();
+                    next();
+                }
                 return;
             }
             const brand = KEY_TO_BRAND[e.key];
@@ -194,6 +278,8 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
     const state = sim.current;
     const front = frontItem(state.items);
     const stars = state.correct >= THREE_STAR_CORRECT ? 3 : state.correct >= TWO_STAR_CORRECT ? 2 : 1;
+    const tutorialTarget = phase === 'tutorial' && front ? front.brand : null;
+    const beltMoving = state.speedPx > 0 && (phase === 'playing' || phase === 'tutorial');
 
     return (
         <div className="mx-auto flex min-h-screen w-full max-w-[1760px] flex-col gap-4 px-4 py-4 landscape:h-screen landscape:px-8 landscape:py-5">
@@ -210,18 +296,40 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
                         <p className="mt-1 text-sm leading-snug text-ink-600 landscape:text-base">{t('conveyorInstructions')}</p>
                     </div>
                 </div>
-                <div className="flex w-full gap-3 landscape:w-auto">
+                <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 landscape:flex landscape:w-auto">
                     <TimerTile key={round} totalSeconds={GAME_SECONDS} running={phase === 'playing'} onExpire={finish} dangerSeconds={10} />
                     <StatTile label={t('conveyorScore')} value={state.correct} />
                     <StatTile label={t('conveyorCombo')} value={`×${state.combo}`} tone="citrus" />
+                    <StatTile
+                        label={t('conveyorSpeed')}
+                        value={`${state.level}/${SPEED_LEVELS.length}`}
+                        progress={state.level / SPEED_LEVELS.length}
+                    />
                 </div>
             </header>
 
             {/* The belt: logos drop out of the packing machine on the left and ride a moving
                 rubber surface between two rollers towards the far end. */}
             <section className="relative flex min-h-[240px] flex-1 flex-col justify-end [--item-w:8.5rem] landscape:[--item-w:16rem]">
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[calc(100%-var(--item-w)*0.62-6rem)] items-center justify-center">
-                    {state.combo >= 3 && phase === 'playing' && (
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-[calc(100%-var(--item-w)*0.62-6rem)] items-center justify-center px-4">
+                    {phase === 'tutorial' && front && (
+                        <TutorialCoach
+                            label={t('conveyorTutorialLabel', { step: state.tutorialStep + 1, total: TUTORIAL_ITEMS.length })}
+                            hint={
+                                tutorialMiss
+                                    ? t('conveyorTutorialWrong', { brand: BRAND_NAMES[front.brand] })
+                                    : t('conveyorTutorialHint', { logo: front.logo.label, brand: BRAND_NAMES[front.brand] })
+                            }
+                            warn={tutorialMiss}
+                        />
+                    )}
+                    {phase === 'playing' && speedUpLevel !== null && (
+                        <p key={`speed-${speedUpLevel}`} className="combo-pop flex items-center gap-3 font-display text-5xl font-black uppercase text-leaf-700 drop-shadow-[0_3px_0_#c4d965] landscape:text-7xl">
+                            <Zap className="h-12 w-12 fill-citrus-400 text-citrus-600 landscape:h-16 landscape:w-16" />
+                            {t('conveyorSpeedUp')}
+                        </p>
+                    )}
+                    {phase === 'playing' && speedUpLevel === null && state.combo >= 3 && (
                         <p key={state.combo} className="combo-pop font-display text-5xl font-black uppercase text-citrus-500 drop-shadow-[0_3px_0_#a95f04] landscape:text-7xl">
                             {t('conveyorCombo')} ×{state.combo}
                         </p>
@@ -235,10 +343,12 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
                     ))}
                 </div>
                 <div className="relative z-10 h-10 rounded-full bg-ink-800 p-1.5 shadow-[0_10px_24px_rgba(31,42,18,0.35)] landscape:h-12">
+                    {/* The stripes scroll exactly as fast as the logos ride, so the belt visibly speeds up too. */}
                     <div
                         className={`h-full rounded-full [background-image:repeating-linear-gradient(90deg,#3f4a33_0_28px,#2d3820_28px_56px)] ${
-                            phase === 'playing' ? 'belt-running' : ''
+                            beltMoving ? 'belt-running' : ''
                         }`}
+                        style={beltMoving ? { animationDuration: `${56 / state.speedPx}s` } : undefined}
                     />
                     <span className="absolute -left-2 top-1/2 h-14 w-14 -translate-y-1/2 rounded-full border-[6px] border-ink-700 bg-ink-300 landscape:h-16 landscape:w-16" />
                     <span className="absolute -right-2 top-1/2 h-14 w-14 -translate-y-1/2 rounded-full border-[6px] border-ink-700 bg-ink-300 landscape:h-16 landscape:w-16" />
@@ -253,23 +363,55 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
                         shortcut={bin.key}
                         flash={feedback?.brand === bin.brand ? (feedback.ok ? 'ok' : 'wrong') : null}
                         flashKey={feedback?.key}
+                        hint={tutorialTarget === null ? null : tutorialTarget === bin.brand}
                         onClick={() => sort(bin.brand)}
                     />
                 ))}
             </div>
 
-            {phase === 'ready' && (
+            {phase === 'intro' && (
                 <GameDialog
+                    wide
                     visual={
                         <span className="flex h-20 w-20 items-center justify-center rounded-3xl border border-leaf-200 bg-leaf-100">
                             <ConveyorLogo className="h-14 w-14" />
                         </span>
                     }
-                    eyebrow={t('conveyorReadyEyebrow')}
-                    title={t('conveyorReadyTitle')}
-                    body={t('conveyorReadyBody')}
-                    primaryLabel={t('conveyorStart')}
-                    onPrimary={start}
+                    eyebrow={t('conveyorIntroEyebrow')}
+                    title={t('gameConveyorTitle')}
+                    body={
+                        <ol className="mt-4 flex flex-col gap-3 text-left text-base landscape:text-lg">
+                            {[
+                                { icon: <ConveyorLogo className="h-7 w-7" />, text: t('conveyorIntroStep1') },
+                                { icon: <Pointer className="h-6 w-6 text-citrus-600" />, text: t('conveyorIntroStep2') },
+                                { icon: <Gauge className="h-6 w-6 text-leaf-700" />, text: t('conveyorIntroStep3') },
+                            ].map((step, i) => (
+                                <li key={i} className="flex items-center gap-4 rounded-2xl bg-ink-50 px-4 py-3">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-leaf-500 font-display text-sm font-black text-ink-900">
+                                        {i + 1}
+                                    </span>
+                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white">{step.icon}</span>
+                                    <span className="leading-snug text-ink-700">{step.text}</span>
+                                </li>
+                            ))}
+                        </ol>
+                    }
+                    primaryLabel={t('conveyorStartTutorial')}
+                    onPrimary={startTutorial}
+                    secondaryLabel={t('back')}
+                    onSecondary={onBack}
+                />
+            )}
+
+            {phase === 'tutorialDone' && (
+                <GameDialog
+                    celebrate
+                    visual={<StarRating stars={3} />}
+                    eyebrow={t('conveyorTutorialDoneEyebrow')}
+                    title={t('conveyorTutorialDoneTitle')}
+                    body={t('conveyorTutorialDoneBody')}
+                    primaryLabel={t('conveyorPlay')}
+                    onPrimary={startGame}
                     secondaryLabel={t('back')}
                     onSecondary={onBack}
                 />
@@ -283,11 +425,32 @@ export default function ConveyorBeltExperience({ onBack, onResult }: { onBack: (
                     title={t('conveyorResultTitle', { correct: state.correct })}
                     body={t('conveyorResultBody', { correct: state.correct, wrong: state.wrong, missed: state.missed, combo: state.bestCombo })}
                     primaryLabel={t('playAgain')}
-                    onPrimary={start}
+                    onPrimary={startGame}
                     secondaryLabel={t('back')}
                     onSecondary={onBack}
                 />
             )}
+        </div>
+    );
+}
+
+function TutorialCoach({ label, hint, warn }: { label: string; hint: string; warn: boolean }) {
+    return (
+        <div
+            key={hint}
+            className={`memory-result kiosk-card flex max-w-3xl items-center gap-5 px-6 py-5 ${warn ? 'game-shake border-red-300' : 'border-citrus-300'}`}
+        >
+            <span
+                className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${
+                    warn ? 'bg-red-100 text-red-600' : 'bg-citrus-100 text-citrus-700'
+                }`}
+            >
+                <Pointer className="h-7 w-7" />
+            </span>
+            <div className="text-left">
+                <p className="font-display text-xs font-bold uppercase tracking-[0.25em] text-leaf-800">{label}</p>
+                <p className="mt-1 text-xl font-semibold leading-snug text-ink-900 landscape:text-2xl">{hint}</p>
+            </div>
         </div>
     );
 }
@@ -303,10 +466,7 @@ function BeltItem({ item, isFront, sortLabel }: { item: Item; isFront: boolean; 
                 : '';
 
     return (
-        <div
-            className="absolute bottom-2 z-10 w-[var(--item-w)]"
-            style={{ left: `calc((100% - var(--item-w)) * ${item.x})` }}
-        >
+        <div className="absolute bottom-2 z-10 w-[var(--item-w)]" style={{ left: `calc((100% - var(--item-w)) * ${item.x})` }}>
             {isFront && (
                 <span className="absolute -top-9 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-citrus-500 px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-ink-900 shadow landscape:text-sm">
                     {sortLabel} ▾
@@ -342,7 +502,7 @@ function PackingMachine() {
                 <br />
                 Line
             </p>
-            {/* The exit slot the logos come out of, with a rubber flap. */}
+            {/* The exit slot the logos come out of. */}
             <div className="mt-auto h-[45%] rounded-t-2xl bg-ink-900/80 [background-image:repeating-linear-gradient(90deg,transparent_0_10px,rgba(255,255,255,0.08)_10px_14px)]" />
         </div>
     );
@@ -353,30 +513,45 @@ function BinButton({
     shortcut,
     flash,
     flashKey,
+    hint,
     onClick,
 }: {
     brand: Brand;
     shortcut: string;
     flash: 'ok' | 'wrong' | null;
     flashKey?: number;
+    /** Tutorial only: true lights this bin up as the answer, false dims it; null outside the tutorial. */
+    hint: boolean | null;
     onClick: () => void;
 }) {
+    const tone =
+        flash === 'ok'
+            ? 'border-leaf-500 bg-leaf-50'
+            : flash === 'wrong'
+              ? 'game-shake border-red-500 bg-red-50'
+              : hint
+                ? 'border-citrus-500 bg-citrus-50 ring-8 ring-citrus-300/60'
+                : 'border-leaf-300';
+
     return (
         <button
             key={flash ? `${brand}-${flashKey}` : brand}
             type="button"
             onClick={onClick}
-            className={`group relative flex touch-manipulation flex-col items-center justify-center gap-2 overflow-hidden rounded-[1.75rem] border-[3px] bg-white px-4 pb-4 pt-7 shadow-[0_8px_0_0_#87a31a] transition active:translate-y-1 active:shadow-[0_4px_0_0_#87a31a] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 landscape:pt-9 ${
-                flash === 'ok' ? 'border-leaf-500 bg-leaf-50' : flash === 'wrong' ? 'game-shake border-red-500 bg-red-50' : 'border-leaf-300'
+            className={`group relative flex touch-manipulation flex-col items-center justify-center gap-2 overflow-hidden rounded-[1.75rem] border-[3px] bg-white px-4 pb-4 pt-7 shadow-[0_8px_0_0_#87a31a] transition active:translate-y-1 active:shadow-[0_4px_0_0_#87a31a] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 landscape:pt-9 ${tone} ${
+                hint === false ? 'opacity-50' : ''
             }`}
         >
             {/* The bin's open mouth. */}
             <span className="absolute inset-x-6 top-2.5 h-3 rounded-full bg-ink-800/80 landscape:inset-x-10 landscape:h-4" />
+            {hint && (
+                <Pointer className="absolute right-6 top-6 h-10 w-10 animate-bounce fill-white text-citrus-600 landscape:right-10 landscape:h-14 landscape:w-14" />
+            )}
             <span className="flex h-12 w-full items-center justify-center landscape:h-20">
                 {brand === 'sinar' ? (
                     <span className="font-display text-3xl font-black uppercase tracking-[0.15em] text-ink-900 landscape:text-6xl">Sinar</span>
                 ) : (
-                    <img src={`/images/sponsors/${brand}.webp`} alt={brand} className="max-h-full max-w-[85%] object-contain" />
+                    <img src={`/images/sponsors/${brand}.webp`} alt={BRAND_NAMES[brand]} className="max-h-full max-w-[85%] object-contain" />
                 )}
             </span>
             <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-400">
