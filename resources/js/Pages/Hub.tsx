@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Sparkles } from 'lucide-react';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
+import FullscreenButton from '@/Components/Kiosk/FullscreenButton';
 import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
 import SponsorLogos from '@/Components/Kiosk/SponsorLogos';
 import TouchButton from '@/Components/Kiosk/TouchButton';
@@ -214,8 +215,9 @@ function HubScreen() {
             <Head title="KRISTA FOOD 2026 — Interactive Experience Hub" />
 
             {(screen === 'idle' || screen === 'called' || screen === 'choose') && (
-                <div className="absolute right-6 top-6 z-20">
+                <div className="absolute right-6 top-6 z-20 flex items-center gap-3">
                     <LanguageSwitcher />
+                    <FullscreenButton />
                 </div>
             )}
 

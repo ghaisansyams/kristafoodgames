@@ -34,6 +34,8 @@ const dict = {
         summaryMemoryLost: '{found} dari {total} pasangan ditemukan',
 
         back: 'Kembali',
+        fullscreen: 'Layar penuh',
+        fullscreenExit: 'Keluar dari layar penuh',
         stepLabel: 'Langkah {step} dari {total}',
         stopwatchTitle: 'Stop at 10.00',
         stopwatchInstructions: 'Tekan tombol untuk mulai. Tekan sekali lagi untuk berhenti — hasil langsung terkunci saat itu juga.',
@@ -207,6 +209,8 @@ const dict = {
         summaryMemoryLost: '{found} of {total} pairs found',
 
         back: 'Back',
+        fullscreen: 'Fullscreen',
+        fullscreenExit: 'Exit fullscreen',
         stepLabel: 'Step {step} of {total}',
         stopwatchTitle: 'Stop at 10.00',
         stopwatchInstructions: 'Press the button to start. Press again to stop — the result locks in immediately.',
@@ -380,6 +384,8 @@ const dict = {
         summaryMemoryLost: '已找到 {found}/{total} 对',
 
         back: '返回',
+        fullscreen: '全屏',
+        fullscreenExit: '退出全屏',
         stepLabel: '第 {step} 步，共 {total} 步',
         stopwatchTitle: 'Stop at 10.00',
         stopwatchInstructions: '按下按钮开始计时。再按一次即可停止——结果会立即锁定。',
