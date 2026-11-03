@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Check, Trophy } from 'lucide-react';
 import BackButton from '@/Components/Kiosk/BackButton';
+import { LeaderboardForm } from '@/Components/Kiosk/LeaderboardOptIn';
 import LogoCarousel from '@/Components/Kiosk/LogoCarousel';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { StopwatchLogo } from '@/Components/Kiosk/GameLogos';
@@ -28,21 +30,33 @@ const HARDWARE_BRIDGE_URL = 'ws://localhost:8765';
 
 type Phase = 'idle' | 'running' | 'result';
 
+// What the result popup is showing: the two choices, the registration form, or the "recorded" thanks.
+type DialogMode = 'choice' | 'form' | 'recorded';
+
 export default function StopwatchExperience({
     visitorId,
     onBack,
     onRunningChange,
     onResult,
+    onRegistered,
 }: {
     visitorId: number | null;
     onBack: () => void;
     onRunningChange?: (running: boolean) => void;
     onResult?: (attempt: { elapsed: number; won: boolean }) => void;
+    /** Called when a visitor who skipped registration signs up from the result popup. */
+    onRegistered?: (visitorId: number, name: string) => Promise<void> | void;
 }) {
     const { t } = useLocale();
     const [phase, setPhase] = useState<Phase>('idle');
     const [elapsed, setElapsed] = useState(0);
     const [finalElapsed, setFinalElapsed] = useState<number | null>(null);
+    const [dialogMode, setDialogMode] = useState<DialogMode>('choice');
+    // Space and the physical button mean "play again" from the popup, except while the visitor is
+    // typing into its registration form — read through a ref because those listeners are bound
+    // once per phase and would otherwise see a stale mode.
+    const dialogModeRef = useRef<DialogMode>('choice');
+    dialogModeRef.current = dialogMode;
     const startRef = useRef(0);
     const frameRef = useRef<number>();
     const hardwareSocketRef = useRef<WebSocket | null>(null);
@@ -91,6 +105,7 @@ export default function StopwatchExperience({
     }
 
     function playAgain() {
+        setDialogMode('choice');
         setFinalElapsed(null);
         setElapsed(0);
         setPhase('idle');
@@ -103,7 +118,7 @@ export default function StopwatchExperience({
     function handlePress() {
         if (phase === 'idle') startFresh();
         else if (phase === 'running') stopNow();
-        else if (phase === 'result') playAgain();
+        else if (phase === 'result' && dialogModeRef.current !== 'form') playAgain();
     }
 
     // Space mirrors the on-screen/physical button, handy on a keyboard-equipped setup or for
@@ -111,6 +126,8 @@ export default function StopwatchExperience({
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (e.code !== 'Space' || e.repeat) return;
+            // A space typed into a form field is just a space.
+            if ((e.target as HTMLElement | null)?.closest('input, textarea')) return;
             e.preventDefault();
             handlePress();
         }
@@ -169,10 +186,6 @@ export default function StopwatchExperience({
                     <span className="ml-1 text-3xl text-ink-500">s</span>
                 </div>
 
-                {phase === 'result' && (
-                    <p className="mb-6 text-center text-lg text-ink-600">{stopwatchVerdict(finalElapsed!, t)}</p>
-                )}
-
                 {phase === 'idle' && (
                     <TouchButton size="lg" onClick={handlePress}>
                         {t('start')}
@@ -183,15 +196,93 @@ export default function StopwatchExperience({
                         {t('stop')}
                     </TouchButton>
                 )}
-                {phase === 'result' && (
-                    <div className="flex flex-col items-center gap-3">
-                        <TouchButton size="lg" variant={won ? 'secondary' : 'ghost'} onClick={handlePress}>
+            </div>
+
+            {phase === 'result' && finalElapsed !== null && (
+                <ResultDialog
+                    elapsed={finalElapsed}
+                    won={won}
+                    registered={visitorId !== null}
+                    mode={dialogMode}
+                    onModeChange={setDialogMode}
+                    onPlayAgain={playAgain}
+                    onRegistered={onRegistered}
+                />
+            )}
+        </div>
+    );
+}
+
+/**
+ * The popup that appears the moment the stopwatch is stopped: the time and how close it was, then
+ * either "record to the leaderboard" (for a visitor who skipped registration) or "play again". A
+ * visitor who is already registered had the score recorded automatically, so for them it says so.
+ */
+function ResultDialog({
+    elapsed,
+    won,
+    registered,
+    mode,
+    onModeChange,
+    onPlayAgain,
+    onRegistered,
+}: {
+    elapsed: number;
+    won: boolean;
+    registered: boolean;
+    mode: DialogMode;
+    onModeChange: (mode: DialogMode) => void;
+    onPlayAgain: () => void;
+    onRegistered?: (visitorId: number, name: string) => Promise<void> | void;
+}) {
+    const { t } = useLocale();
+
+    return (
+        <div
+            className="fixed inset-0 z-30 flex items-start justify-center overflow-y-auto bg-ink-900/55 px-6 py-8 backdrop-blur-sm landscape:items-center"
+            role="dialog"
+            aria-modal
+        >
+            {mode === 'form' ? (
+                <LeaderboardForm
+                    className="memory-result kiosk-card my-auto w-full max-w-md p-6"
+                    onBack={() => onModeChange('choice')}
+                    onRecorded={async (newVisitorId, name) => {
+                        onModeChange('recorded');
+                        await onRegistered?.(newVisitorId, name);
+                    }}
+                />
+            ) : (
+                <div className="memory-result kiosk-card my-auto w-full max-w-md p-8 text-center">
+                    <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-leaf-800">{t('summaryEyebrow')}</p>
+                    <p className="mt-2 font-display text-7xl font-black tabular-nums leading-none text-citrus-600">
+                        {elapsed.toFixed(2)}
+                        <span className="ml-1 text-3xl text-ink-500">s</span>
+                    </p>
+                    <p className="mb-6 mt-3 text-lg text-ink-600">{stopwatchVerdict(elapsed, t)}</p>
+
+                    {mode === 'recorded' && (
+                        <p className="mb-5 text-lg font-semibold text-leaf-800">{t('summaryRecordSuccess')}</p>
+                    )}
+                    {mode === 'choice' && registered && won && (
+                        <p className="mb-5 flex items-center justify-center gap-2 text-lg font-semibold text-leaf-800">
+                            <Check className="h-6 w-6" strokeWidth={3} /> {t('stopDialogRegistered')}
+                        </p>
+                    )}
+
+                    <div className="flex flex-col items-center gap-4">
+                        {mode === 'choice' && !registered && (
+                            <TouchButton variant="secondary" className="w-full" onClick={() => onModeChange('form')}>
+                                <Trophy className="h-6 w-6" /> {t('summaryRecordButton')}
+                            </TouchButton>
+                        )}
+                        <TouchButton className="w-full" onClick={onPlayAgain}>
                             {t('playAgain')}
                         </TouchButton>
                         <p className="text-xs font-semibold uppercase tracking-widest text-leaf-800">{t('pressSpaceToPlayAgain')}</p>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -182,6 +182,7 @@ const dict = {
         summaryRecordButton: 'Catat ke Leaderboard',
         summaryRecordSubmitting: 'Mencatat…',
         summaryRecordSuccess: 'Hasil Anda sudah tercatat ✓',
+        stopDialogRegistered: 'Skor Anda sudah tercatat di leaderboard.',
         summaryRecordError: 'Tidak dapat mencatat rekor Anda. Silakan coba lagi.',
     },
     en: {
@@ -361,6 +362,7 @@ const dict = {
         summaryRecordButton: 'Record to Leaderboard',
         summaryRecordSubmitting: 'Recording…',
         summaryRecordSuccess: 'Your result has been recorded ✓',
+        stopDialogRegistered: 'Your score is already on the leaderboard.',
         summaryRecordError: 'Could not record your result. Please try again.',
     },
     zh: {
@@ -540,6 +542,7 @@ const dict = {
         summaryRecordButton: '记录到排行榜',
         summaryRecordSubmitting: '记录中…',
         summaryRecordSuccess: '您的成绩已记录 ✓',
+        stopDialogRegistered: '您的成绩已记录到排行榜。',
         summaryRecordError: '无法记录您的成绩。请重试。',
     },
 } as const;

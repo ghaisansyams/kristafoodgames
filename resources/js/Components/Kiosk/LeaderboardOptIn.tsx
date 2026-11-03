@@ -20,9 +20,49 @@ export default function LeaderboardOptIn({
     onRecorded: (visitorId: number, name: string) => Promise<void> | void;
 }) {
     const { t } = useLocale();
+    const [recorded, setRecorded] = useState(false);
+
+    if (recorded) {
+        return <p className="text-sm font-semibold text-leaf-800">{t('summaryRecordSuccess')}</p>;
+    }
+
+    if (!open) {
+        return (
+            <TouchButton variant="secondary" onClick={() => onOpenChange(true)} className="flex items-center gap-3">
+                <Trophy className="h-6 w-6" /> {t('summaryRecordPrompt')}
+            </TouchButton>
+        );
+    }
+
+    return (
+        <LeaderboardForm
+            onBack={() => onOpenChange(false)}
+            onRecorded={async (visitorId, name) => {
+                setRecorded(true);
+                onOpenChange(false);
+                await onRecorded(visitorId, name);
+            }}
+        />
+    );
+}
+
+/**
+ * The registration form that puts a visitor on the leaderboard: five fields, a Back button on
+ * top, one submit button. Used on the end-of-visit summary and inside the Stop at 10.00 result
+ * popup. `className` replaces the default white card for callers that already sit in one.
+ */
+export function LeaderboardForm({
+    onBack,
+    onRecorded,
+    className = 'kiosk-card w-full max-w-md p-6',
+}: {
+    onBack: () => void;
+    onRecorded: (visitorId: number, name: string) => Promise<void> | void;
+    className?: string;
+}) {
+    const { t } = useLocale();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [recorded, setRecorded] = useState(false);
     const [data, setData] = useState<VisitorInput>({ name: '', company: '', job_title: '', contact: '', email: '' });
 
     const isValid =
@@ -40,32 +80,15 @@ export default function LeaderboardOptIn({
         const result = await VisitorApi.create(data);
         setSubmitting(false);
         if (result.ok) {
-            setRecorded(true);
-            onOpenChange(false);
             await onRecorded(result.visitorId, data.name.trim());
         } else {
             setError(result.message ?? t('summaryRecordError'));
         }
     }
 
-    if (recorded) {
-        return <p className="text-sm font-semibold text-leaf-800">{t('summaryRecordSuccess')}</p>;
-    }
-
-    if (!open) {
-        return (
-            <TouchButton variant="secondary" onClick={() => onOpenChange(true)} className="flex items-center gap-3">
-                <Trophy className="h-6 w-6" /> {t('summaryRecordPrompt')}
-            </TouchButton>
-        );
-    }
-
     return (
-        <form
-            onSubmit={submit}
-            className="kiosk-card w-full max-w-md space-y-3 p-6 text-left"
-        >
-            <BackButton onClick={() => onOpenChange(false)} />
+        <form onSubmit={submit} className={`space-y-3 text-left ${className}`}>
+            <BackButton onClick={onBack} />
             <p className="pt-1 text-base font-semibold text-ink-700">{t('summaryRecordSubtitle')}</p>
             <Field placeholder={t('fullName')} value={data.name} onChange={(v) => setData((d) => ({ ...d, name: v }))} />
             <Field

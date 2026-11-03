@@ -345,6 +345,13 @@ function HubScreen() {
                             onBack={goToChoose}
                             onRunningChange={setStopwatchRunning}
                             onResult={recordStopwatchAttempt}
+                            onRegistered={(newVisitorId, name) => {
+                                // Signing up from the Stop at 10.00 popup makes them a registered player
+                                // from here on: later results record under them, and the summary
+                                // skips its own leaderboard prompt.
+                                setVisitorId(newVisitorId);
+                                return recordToLeaderboard(newVisitorId, name);
+                            }}
                         />
                     )}
                 </>
