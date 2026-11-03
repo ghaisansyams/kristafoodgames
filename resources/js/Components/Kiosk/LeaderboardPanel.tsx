@@ -47,7 +47,7 @@ export default function LeaderboardPanel() {
 
     return (
         <>
-            <div className="kiosk-card mt-6 w-full max-w-md p-5 sm:max-w-2xl portrait:sm:max-w-3xl portrait:sm:p-7">
+            <div className="kiosk-card mt-6 w-full max-w-md p-5 sm:max-w-2xl portrait:sm:max-w-3xl portrait:sm:p-5">
                 <p className="mb-4 flex items-center justify-center gap-2 font-display text-sm font-bold uppercase tracking-widest text-leaf-800">
                     <Trophy className="h-4 w-4" /> {t('topScores')}
                 </p>

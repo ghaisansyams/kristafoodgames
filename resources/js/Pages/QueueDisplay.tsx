@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Users } from 'lucide-react';
+import BackButton from '@/Components/Kiosk/BackButton';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import QrCodeImage from '@/Components/Kiosk/QrCodeImage';
 import LanguageSwitcher from '@/Components/Kiosk/LanguageSwitcher';
@@ -46,11 +47,13 @@ function QueueDisplayScreen() {
         <CosmicBackground>
             <Head title="KRISTA FOOD 2026 — Ambil Nomor Antrian" />
 
+            <BackButton label={t('backToGames')} onClick={() => router.visit('/')} className="absolute left-6 top-6 z-20" />
+
             <div className="absolute right-6 top-6 z-20">
                 <LanguageSwitcher />
             </div>
 
-            <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center">
+            <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[19rem]">
                 <SponsorLogos className="mt-10" />
 
                 <h1 className="font-display text-3xl font-black uppercase text-ink-900">{t('queueTabletTitle')}</h1>

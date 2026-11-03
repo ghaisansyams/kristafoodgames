@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Head } from '@inertiajs/react';
-import { Sparkles, User } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Sparkles, Ticket, User } from 'lucide-react';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
 import FullscreenButton from '@/Components/Kiosk/FullscreenButton';
@@ -232,7 +232,7 @@ function HubScreen() {
             {screen === 'idle' && (
                 <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:gap-4 portrait:sm:pb-[19rem] portrait:sm:pt-24">
                     <SponsorLogos />
-                    <StopwatchLogo className="h-32 w-32 portrait:sm:h-20 portrait:sm:w-20" />
+                    <StopwatchLogo className="h-32 w-32 portrait:sm:h-14 portrait:sm:w-14" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-ink-900">
                         {t('heroLine1')}
                         <br />
@@ -246,9 +246,14 @@ function HubScreen() {
                     {/* For visitors already in the company's own customer database who'd rather
                         not queue for a ticket — goes straight to the games, no visitor record
                         attached (so results won't show up under their name on the leaderboard). */}
-                    <TouchButton variant="ghost" onClick={goToChoose}>
-                        {t('skipAndPlay')}
-                    </TouchButton>
+                    <div className="flex flex-col items-center gap-4">
+                        <TouchButton onClick={() => router.visit('/queue')}>
+                            <Ticket className="h-7 w-7" /> {t('openQueue')}
+                        </TouchButton>
+                        <TouchButton variant="ghost" onClick={goToChoose}>
+                            {t('skipAndPlay')}
+                        </TouchButton>
+                    </div>
 
                     <LeaderboardPanel />
                 </div>
