@@ -67,16 +67,17 @@ export const QueueApi = {
 
 export interface LeaderboardEntry {
     name: string;
-    game: string;
     score: string;
+    /** Memory Match only: how many moves the clear took. */
+    moves?: number;
 }
 
 export interface LeaderboardGame {
     game: string;
-    entries: { name: string; score: string }[];
+    entries: LeaderboardEntry[];
 }
 
 export const LeaderboardApi = {
-    recent: () => api().get<{ entries: LeaderboardEntry[] }>('/api/leaderboard').then((r) => r.data.entries),
+    recent: () => api().get<{ games: LeaderboardGame[] }>('/api/leaderboard').then((r) => r.data.games),
     full: () => api().get<{ games: LeaderboardGame[] }>('/api/leaderboard/full').then((r) => r.data.games),
 };

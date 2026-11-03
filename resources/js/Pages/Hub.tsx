@@ -67,16 +67,31 @@ function HubScreen() {
     }, []);
 
     // A visitor who skipped identity capture ("Already a customer? Skip and play") plays with
-    // no visitor_id, so their attempt never reached the leaderboard. Opting in from the summary
-    // screen creates that identity after the fact and re-submits the best attempt under it.
-    const recordStopwatchToLeaderboard = useCallback(
+    // no visitor_id, so their attempts never reached the leaderboard. Opting in from the summary
+    // screen creates that identity after the fact and re-submits the best attempt of each game
+    // played under it. Only a completed Memory Match can rank, so a lost one isn't re-sent.
+    const recordToLeaderboard = useCallback(
         async (newVisitorId: number) => {
-            if (!stopwatchBest) return;
-            await MiniGameApi.record('stopwatch', stopwatchBest.won, newVisitorId, {
-                stopped_at: Number(stopwatchBest.elapsed.toFixed(3)),
-            });
+            const submissions: Promise<unknown>[] = [];
+            if (stopwatchBest) {
+                submissions.push(
+                    MiniGameApi.record('stopwatch', stopwatchBest.won, newVisitorId, {
+                        stopped_at: Number(stopwatchBest.elapsed.toFixed(3)),
+                    }),
+                );
+            }
+            if (memoryBest?.won) {
+                submissions.push(
+                    MiniGameApi.record('memory_match', true, newVisitorId, {
+                        moves: memoryBest.moves,
+                        seconds: memoryBest.seconds,
+                        pairs_found: memoryBest.found,
+                    }),
+                );
+            }
+            await Promise.all(submissions);
         },
-        [stopwatchBest],
+        [stopwatchBest, memoryBest],
     );
 
     const GAMES: { screen: Screen; title: string; tagline: string; Logo: LogoComponent }[] = [
@@ -205,7 +220,7 @@ function HubScreen() {
             )}
 
             {screen === 'idle' && (
-                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[23rem]">
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[21rem]">
                     <SponsorLogos className="mt-10" />
                     <StopwatchLogo className="h-32 w-32" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-ink-900">
@@ -292,7 +307,7 @@ function HubScreen() {
                         )}
                     </div>
 
-                    {!visitorId && stopwatchBest && <LeaderboardOptIn onRecorded={recordStopwatchToLeaderboard} />}
+                    {!visitorId && (stopwatchBest || memoryBest?.won) && <LeaderboardOptIn onRecorded={recordToLeaderboard} />}
 
                     <TouchButton onClick={resetToIdle}>{t('imDoneNextGuest')}</TouchButton>
                 </div>
