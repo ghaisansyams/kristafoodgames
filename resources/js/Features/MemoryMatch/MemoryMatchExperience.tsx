@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Check, Clock, Leaf, Star } from 'lucide-react';
+import { Check, Clock, Leaf, Star } from 'lucide-react';
+import BackButton from '@/Components/Kiosk/BackButton';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { MemoryLogo } from '@/Components/Kiosk/GameLogos';
 import { MiniGameApi } from '@/lib/api';
@@ -12,8 +13,13 @@ const DANGER_SECONDS = 20;
 const MISMATCH_DELAY_MS = 800;
 
 // Moves for a 3-star / 2-star finish; fourteen pairs can't be cleared in fewer than fourteen.
-const THREE_STAR_MOVES = 22;
-const TWO_STAR_MOVES = 32;
+const THREE_STAR_MOVES = 40;
+const TWO_STAR_MOVES = 56;
+
+/** Clearing the board earns at least one star; fewer moves earns more. */
+export function starsForMoves(moves: number): 1 | 2 | 3 {
+    return moves <= THREE_STAR_MOVES ? 3 : moves <= TWO_STAR_MOVES ? 2 : 1;
+}
 
 export type MemoryAttempt = { won: boolean; moves: number; seconds: number; found: number; total: number };
 
@@ -138,12 +144,7 @@ export default function MemoryMatchExperience({
     return (
         <div className="mx-auto flex h-screen w-full max-w-[1760px] flex-col gap-3 px-4 py-4 landscape:gap-4 landscape:px-8 landscape:py-5">
             <header className="flex flex-wrap items-center gap-x-6 gap-y-3 landscape:flex-nowrap">
-                <button
-                    onClick={onBack}
-                    className="flex min-h-[48px] shrink-0 items-center gap-2 rounded-full border-2 border-ink-200 bg-white px-5 font-display text-sm font-bold uppercase tracking-wide text-ink-700 shadow-[0_4px_0_0_#dadfd2] transition hover:bg-ink-50 active:translate-y-0.5 active:shadow-[0_2px_0_0_#dadfd2]"
-                >
-                    <ArrowLeft className="h-4 w-4" strokeWidth={3} /> {t('back')}
-                </button>
+                <BackButton onClick={onBack} />
 
                 <div className="flex min-w-0 flex-1 items-center gap-4">
                     <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-leaf-200 bg-leaf-100 sm:flex landscape:h-16 landscape:w-16">
@@ -296,7 +297,7 @@ function ResultOverlay({
 }) {
     const { t } = useLocale();
     const won = outcome === 'win';
-    const stars = attempt.moves <= THREE_STAR_MOVES ? 3 : attempt.moves <= TWO_STAR_MOVES ? 2 : 1;
+    const stars = starsForMoves(attempt.moves);
 
     return (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink-900/55 px-6 backdrop-blur-sm" role="dialog" aria-modal>
@@ -329,9 +330,9 @@ function ResultOverlay({
                 </p>
                 <div className="flex flex-col items-center gap-3">
                     <TouchButton onClick={onPlayAgain}>{t('playAgain')}</TouchButton>
-                    <button onClick={onBack} className="text-sm font-semibold text-ink-500 underline hover:text-ink-900">
+                    <TouchButton variant="ghost" onClick={onBack}>
                         {t('back')}
-                    </button>
+                    </TouchButton>
                 </div>
             </div>
         </div>

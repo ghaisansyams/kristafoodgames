@@ -1,13 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import BackButton from '@/Components/Kiosk/BackButton';
 import LogoCarousel from '@/Components/Kiosk/LogoCarousel';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { StopwatchLogo } from '@/Components/Kiosk/GameLogos';
 import { MiniGameApi } from '@/lib/api';
-import { useLocale } from '@/lib/i18n';
+import { useLocale, type Key } from '@/lib/i18n';
 
 const TARGET_SECONDS = 10;
 const WIN_TOLERANCE = 0.15;
+
+/** A stop only counts as perfect when the stopwatch face reads exactly 10.00. */
+export function isPerfectStop(elapsed: number): boolean {
+    return elapsed.toFixed(2) === TARGET_SECONDS.toFixed(2);
+}
+
+/** The line under a stopwatch result: "Perfect timing!", or which way and by how much it missed. */
+export function stopwatchVerdict(elapsed: number, t: (key: Key, vars?: Record<string, string | number>) => string): string {
+    if (isPerfectStop(elapsed)) return t('perfectTiming');
+    return t(elapsed < TARGET_SECONDS ? 'stopwatchMissEarly' : 'stopwatchMissLate', { diff: Math.abs(elapsed - TARGET_SECONDS).toFixed(2) });
+}
 
 // Local-only bridge for the booth's physical button (see hardware/arduino-bridge) — a small
 // Python script on the same laptop reads the Arduino over serial and relays each press here.
@@ -136,20 +147,14 @@ export default function StopwatchExperience({
     }, [phase]);
 
     const won = finalElapsed !== null && Math.abs(finalElapsed - TARGET_SECONDS) <= WIN_TOLERANCE;
-    const diff = finalElapsed !== null ? Math.abs(finalElapsed - TARGET_SECONDS) : null;
 
     return (
-        <div className="flex min-h-screen w-full flex-col items-center pb-10 pt-16 portrait:sm:pb-[22.5rem]">
+        <div className="flex min-h-screen w-full flex-col items-center pb-10 pt-24 portrait:sm:pb-[22.5rem]">
             {/* Fills the space above the stopwatch with the product logos, taking turns in the middle. */}
             <LogoCarousel className="mb-4" />
 
             <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-6">
-                <button
-                    onClick={onBack}
-                    className="absolute left-6 top-6 flex w-fit items-center gap-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
-                >
-                    <ArrowLeft className="h-4 w-4" /> {t('back')}
-                </button>
+                <BackButton onClick={onBack} className="absolute left-6 top-6 z-20" />
 
                 <StopwatchLogo className={`mb-2 h-16 w-16 ${phase === 'running' ? 'animate-pulse' : ''}`} />
                 <h2 className="mb-2 font-display text-4xl font-black uppercase text-ink-900">{t('stopwatchTitle')}</h2>
@@ -165,10 +170,7 @@ export default function StopwatchExperience({
                 </div>
 
                 {phase === 'result' && (
-                    <p className="mb-6 text-center text-lg text-ink-600">
-                        {won ? t('perfectTiming') : finalElapsed! < TARGET_SECONDS ? t('tooEarly') : t('tooLate')} — {diff!.toFixed(2)}s{' '}
-                        {t('offTarget')}
-                    </p>
+                    <p className="mb-6 text-center text-lg text-ink-600">{stopwatchVerdict(finalElapsed!, t)}</p>
                 )}
 
                 {phase === 'idle' && (
@@ -187,9 +189,6 @@ export default function StopwatchExperience({
                             {t('playAgain')}
                         </TouchButton>
                         <p className="text-xs font-semibold uppercase tracking-widest text-leaf-800">{t('pressSpaceToPlayAgain')}</p>
-                        <button onClick={onBack} className="text-sm font-semibold text-ink-500 underline hover:text-ink-900">
-                            {t('back')}
-                        </button>
                     </div>
                 )}
             </div>

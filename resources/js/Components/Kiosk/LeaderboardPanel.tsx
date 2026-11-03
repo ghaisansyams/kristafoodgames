@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trophy, X } from 'lucide-react';
+import TouchButton from '@/Components/Kiosk/TouchButton';
 import { LeaderboardApi, type LeaderboardGame } from '@/lib/api';
 import { useLocale } from '@/lib/i18n';
 
@@ -55,12 +56,11 @@ export default function LeaderboardPanel() {
                         <Podium key={game.game} game={game} />
                     ))}
                 </div>
-                <button
-                    onClick={() => setShowFull(true)}
-                    className="mt-4 w-full text-center text-sm font-semibold text-leaf-800 underline hover:text-leaf-900"
-                >
-                    {t('showMore')}
-                </button>
+                <div className="mt-5 flex justify-center">
+                    <TouchButton variant="ghost" size="sm" onClick={() => setShowFull(true)}>
+                        {t('showMore')}
+                    </TouchButton>
+                </div>
             </div>
 
             {showFull && <FullLeaderboardPopup onClose={() => setShowFull(false)} />}

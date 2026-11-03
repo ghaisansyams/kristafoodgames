@@ -1,4 +1,6 @@
 import { FormEvent, useState } from 'react';
+import { Trophy } from 'lucide-react';
+import BackButton from '@/Components/Kiosk/BackButton';
 import TouchButton from '@/Components/Kiosk/TouchButton';
 import { VisitorApi, type VisitorInput } from '@/lib/api';
 import { useLocale } from '@/lib/i18n';
@@ -7,9 +9,17 @@ import { useLocale } from '@/lib/i18n';
 // customer? Skip and play") — their game results exist but carry no visitor_id, so they never
 // show up on the leaderboard. This lets them opt in after the fact instead of forcing identity
 // capture up front; declining and tapping "Finish" is just as valid a path.
-export default function LeaderboardOptIn({ onRecorded }: { onRecorded: (visitorId: number) => Promise<void> | void }) {
+export default function LeaderboardOptIn({
+    open,
+    onOpenChange,
+    onRecorded,
+}: {
+    /** Whether the form is showing. The parent owns this so it can hide its own "finish" button while the form is open. */
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onRecorded: (visitorId: number, name: string) => Promise<void> | void;
+}) {
     const { t } = useLocale();
-    const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [recorded, setRecorded] = useState(false);
@@ -31,7 +41,8 @@ export default function LeaderboardOptIn({ onRecorded }: { onRecorded: (visitorI
         setSubmitting(false);
         if (result.ok) {
             setRecorded(true);
-            await onRecorded(result.visitorId);
+            onOpenChange(false);
+            await onRecorded(result.visitorId, data.name.trim());
         } else {
             setError(result.message ?? t('summaryRecordError'));
         }
@@ -43,18 +54,19 @@ export default function LeaderboardOptIn({ onRecorded }: { onRecorded: (visitorI
 
     if (!open) {
         return (
-            <button onClick={() => setOpen(true)} className="text-sm font-semibold text-leaf-800 underline">
-                {t('summaryRecordPrompt')}
-            </button>
+            <TouchButton variant="secondary" onClick={() => onOpenChange(true)} className="flex items-center gap-3">
+                <Trophy className="h-6 w-6" /> {t('summaryRecordPrompt')}
+            </TouchButton>
         );
     }
 
     return (
         <form
             onSubmit={submit}
-            className="w-full max-w-md space-y-3 rounded-3xl border border-ink-100 bg-white p-6 text-left shadow-card"
+            className="kiosk-card w-full max-w-md space-y-3 p-6 text-left"
         >
-            <p className="text-sm font-semibold text-ink-700">{t('summaryRecordSubtitle')}</p>
+            <BackButton onClick={() => onOpenChange(false)} />
+            <p className="pt-1 text-base font-semibold text-ink-700">{t('summaryRecordSubtitle')}</p>
             <Field placeholder={t('fullName')} value={data.name} onChange={(v) => setData((d) => ({ ...d, name: v }))} />
             <Field
                 placeholder={t('companyOrInstitution')}
@@ -96,7 +108,7 @@ function Field({
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="min-h-[52px] w-full rounded-2xl border border-ink-100 bg-white px-5 text-base text-ink-900 placeholder:text-ink-400 focus:border-leaf-500 focus:ring-2 focus:ring-leaf-200 focus:outline-none"
+            className="min-h-[3.5rem] w-full rounded-2xl border border-ink-100 bg-white px-5 text-base text-ink-900 placeholder:text-ink-400 focus:border-leaf-500 focus:ring-2 focus:ring-leaf-200 focus:outline-none"
         />
     );
 }

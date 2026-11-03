@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Head } from '@inertiajs/react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, User } from 'lucide-react';
 import CosmicBackground from '@/Components/Kiosk/CosmicBackground';
 import LeaderboardPanel from '@/Components/Kiosk/LeaderboardPanel';
 import FullscreenButton from '@/Components/Kiosk/FullscreenButton';
@@ -13,7 +13,7 @@ import { useIdleReset } from '@/lib/useIdleReset';
 import { LocaleProvider, useLocale } from '@/lib/i18n';
 import { MiniGameApi, QueueApi, type QueueTicketSummary } from '@/lib/api';
 import MemoryMatchExperience, { type MemoryAttempt } from '@/Features/MemoryMatch/MemoryMatchExperience';
-import StopwatchExperience from '@/Features/Stopwatch/StopwatchExperience';
+import StopwatchExperience, { stopwatchVerdict } from '@/Features/Stopwatch/StopwatchExperience';
 
 type Screen = 'idle' | 'called' | 'choose' | 'memory_match' | 'stopwatch' | 'summary';
 
@@ -46,6 +46,10 @@ function HubScreen() {
     const [calledTicket, setCalledTicket] = useState<QueueTicketSummary | null>(null);
     const [countdown, setCountdown] = useState(CALL_GRACE_SECONDS);
     const [stopwatchRunning, setStopwatchRunning] = useState(false);
+    // Who is playing, when we know: the name from their queue registration, or the one they type
+    // when they opt in to the leaderboard at the end. Shown on the results screen.
+    const [playerName, setPlayerName] = useState<string | null>(null);
+    const [optInOpen, setOptInOpen] = useState(false);
     const currentTicketIdRef = useRef<number | null>(null);
 
     // Best result per game played this visit, surfaced on the end-of-visit summary screen
@@ -72,7 +76,8 @@ function HubScreen() {
     // screen creates that identity after the fact and re-submits the best attempt of each game
     // played under it. Only a completed Memory Match can rank, so a lost one isn't re-sent.
     const recordToLeaderboard = useCallback(
-        async (newVisitorId: number) => {
+        async (newVisitorId: number, name: string) => {
+            setPlayerName(name);
             const submissions: Promise<unknown>[] = [];
             if (stopwatchBest) {
                 submissions.push(
@@ -112,6 +117,8 @@ function HubScreen() {
         setCalledTicket(null);
         setStopwatchBest(null);
         setMemoryBest(null);
+        setPlayerName(null);
+        setOptInOpen(false);
         setScreen('idle');
 
         QueueApi.advance(finishedTicketId)
@@ -200,6 +207,7 @@ function HubScreen() {
             .then((confirmedVisitorId) => {
                 currentTicketIdRef.current = calledTicket.id;
                 setVisitorId(confirmedVisitorId);
+                setPlayerName(calledTicket.visitor_name ?? null);
                 setCalledTicket(null);
                 setScreen('choose');
             })
@@ -222,9 +230,9 @@ function HubScreen() {
             )}
 
             {screen === 'idle' && (
-                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:pb-[21rem]">
-                    <SponsorLogos className="mt-10" />
-                    <StopwatchLogo className="h-32 w-32" />
+                <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-10 text-center portrait:sm:gap-4 portrait:sm:pb-[19rem] portrait:sm:pt-24">
+                    <SponsorLogos />
+                    <StopwatchLogo className="h-32 w-32 portrait:sm:h-20 portrait:sm:w-20" />
                     <h1 className="font-display text-5xl font-black uppercase leading-tight text-ink-900">
                         {t('heroLine1')}
                         <br />
@@ -238,9 +246,9 @@ function HubScreen() {
                     {/* For visitors already in the company's own customer database who'd rather
                         not queue for a ticket — goes straight to the games, no visitor record
                         attached (so results won't show up under their name on the leaderboard). */}
-                    <button onClick={goToChoose} className="text-sm text-ink-500 underline hover:text-ink-700">
+                    <TouchButton variant="ghost" onClick={goToChoose}>
                         {t('skipAndPlay')}
-                    </button>
+                    </TouchButton>
 
                     <LeaderboardPanel />
                 </div>
@@ -268,9 +276,9 @@ function HubScreen() {
                             <GameCard key={game.screen} game={game} onClick={() => setScreen(game.screen)} />
                         ))}
                     </div>
-                    <button onClick={finishVisit} className="mt-2 text-sm text-ink-500 underline">
+                    <TouchButton variant="ghost" onClick={finishVisit} className="mt-2">
                         {t('imDoneNextGuest')}
-                    </button>
+                    </TouchButton>
                 </div>
             )}
 
@@ -280,6 +288,13 @@ function HubScreen() {
                         {t('summaryEyebrow')}
                     </p>
                     <h1 className="font-display text-3xl font-black uppercase text-ink-900">{t('summaryTitle')}</h1>
+
+                    {playerName && (
+                        <p className="flex max-w-full items-center gap-3 rounded-full border border-leaf-200 bg-leaf-100 px-6 py-3 font-display text-xl font-black text-leaf-800">
+                            <User className="h-6 w-6 shrink-0" strokeWidth={2.5} />
+                            <span className="truncate">{playerName}</span>
+                        </p>
+                    )}
 
                     <div className="flex w-full max-w-md flex-col gap-4">
                         {memoryBest && (
@@ -300,18 +315,17 @@ function HubScreen() {
                                     {t('summaryStopwatchBestLabel')}
                                 </p>
                                 <p className="mt-1 font-display text-4xl font-black text-citrus-600">{stopwatchBest.elapsed.toFixed(2)}s</p>
-                                <p className="text-sm text-ink-600">
-                                    {stopwatchBest.won
-                                        ? t('perfectTiming')
-                                        : `${Math.abs(stopwatchBest.elapsed - 10).toFixed(2)}s ${t('offTarget')}`}
-                                </p>
+                                <p className="text-sm text-ink-600">{stopwatchVerdict(stopwatchBest.elapsed, t)}</p>
                             </div>
                         )}
                     </div>
 
-                    {!visitorId && (stopwatchBest || memoryBest?.won) && <LeaderboardOptIn onRecorded={recordToLeaderboard} />}
+                    {!visitorId && (stopwatchBest || memoryBest?.won) && (
+                        <LeaderboardOptIn open={optInOpen} onOpenChange={setOptInOpen} onRecorded={recordToLeaderboard} />
+                    )}
 
-                    <TouchButton onClick={resetToIdle}>{t('imDoneNextGuest')}</TouchButton>
+                    {/* While the leaderboard form is open its own Back button is the way out. */}
+                    {!optInOpen && <TouchButton onClick={resetToIdle}>{t('imDoneNextGuest')}</TouchButton>}
                 </div>
             )}
 

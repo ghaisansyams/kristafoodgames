@@ -30,7 +30,7 @@ export default function FullscreenButton({ className = '' }: { className?: strin
             onClick={() => (active ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {})}
             aria-label={label}
             title={label}
-            className={`flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full border border-ink-100 bg-white text-leaf-700 shadow-card transition hover:bg-leaf-50 hover:text-leaf-800 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 ${className}`}
+            className={`flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full border-2 border-leaf-300 bg-white text-leaf-700 shadow-[0_4px_0_0_#d9e79a] transition hover:border-leaf-400 hover:bg-leaf-50 hover:text-leaf-800 active:translate-y-0.5 active:shadow-[0_2px_0_0_#d9e79a] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-leaf-300 ${className}`}
         >
             {active ? <Minimize className="h-5 w-5" strokeWidth={2.4} /> : <Maximize className="h-5 w-5" strokeWidth={2.4} />}
         </button>
